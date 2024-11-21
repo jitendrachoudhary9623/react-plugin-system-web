@@ -25,7 +25,8 @@ export interface Plugin {
   config?: Record<string, any>;
 }
 
-const mockPlugins: Plugin[] = [
+// Initial plugin data
+const initialPlugins: Plugin[] = [
   {
     id: 'test-plugin',
     name: 'Test Plugin',
@@ -119,13 +120,31 @@ const mockPlugins: Plugin[] = [
   }
 ];
 
+// Local Storage Key
+const PLUGINS_STORAGE_KEY = 'store_plugins';
+
+// Helper functions for localStorage
+const getStoredPlugins = (): Plugin[] => {
+  const stored = localStorage.getItem(PLUGINS_STORAGE_KEY);
+  if (!stored) {
+    localStorage.setItem(PLUGINS_STORAGE_KEY, JSON.stringify(initialPlugins));
+    return initialPlugins;
+  }
+  return JSON.parse(stored);
+};
+
+const updateStoredPlugins = (plugins: Plugin[]) => {
+  localStorage.setItem(PLUGINS_STORAGE_KEY, JSON.stringify(plugins));
+};
+
 // Mock API endpoints
 export const api = {
   // Get enabled plugins for a seller
   getEnabledPlugins: async (sellerId: string): Promise<Plugin[]> => {
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve(mockPlugins);
+        const plugins = getStoredPlugins();
+        resolve(plugins);
       }, 500);
     });
   },
@@ -134,10 +153,11 @@ export const api = {
   getPluginsForLocation: async (sellerId: string, location: PluginLocation): Promise<Plugin[]> => {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const plugins = mockPlugins.filter(
+        const plugins = getStoredPlugins();
+        const filtered = plugins.filter(
           plugin => plugin.enabled && plugin.locations.includes(location)
         );
-        resolve(plugins);
+        resolve(filtered);
       }, 500);
     });
   },
@@ -146,9 +166,12 @@ export const api = {
   togglePlugin: async (sellerId: string, pluginId: string): Promise<Plugin> => {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
-        const plugin = mockPlugins.find(p => p.id === pluginId);
+        const plugins = getStoredPlugins();
+        const plugin = plugins.find(p => p.id === pluginId);
+        
         if (plugin) {
           plugin.enabled = !plugin.enabled;
+          updateStoredPlugins(plugins);
           resolve({ ...plugin });
         } else {
           reject(new Error('Plugin not found'));
