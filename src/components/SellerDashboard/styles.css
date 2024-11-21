@@ -76,7 +76,7 @@
 /* Plugin Cards */
 .plugins-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(600px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(800px, 1fr));
   gap: 1.5rem;
 }
 
@@ -121,6 +121,7 @@
   margin-top: 1.5rem;
   padding-top: 1.5rem;
   border-top: 1px solid #e9ecef;
+  min-height: 400px;
 }
 
 .plugin-config-section,
@@ -128,6 +129,9 @@
   background: #f8f9fa;
   border-radius: 8px;
   padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .plugin-config-section h4,
@@ -135,13 +139,40 @@
   margin: 0 0 1rem 0;
   color: #2c3e50;
   font-size: 1.1rem;
+  position: sticky;
+  top: 0;
+  background: #f8f9fa;
+  padding: 0.5rem 0;
+  z-index: 1;
 }
 
 .preview-container {
   background: white;
   border-radius: 6px;
   padding: 1rem;
-  min-height: 100px;
+  flex: 1;
+  overflow-y: auto;
+  max-height: 500px;
+  scrollbar-width: thin;
+  scrollbar-color: #bdc3c7 #f8f9fa;
+}
+
+.preview-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.preview-container::-webkit-scrollbar-track {
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+.preview-container::-webkit-scrollbar-thumb {
+  background: #bdc3c7;
+  border-radius: 4px;
+}
+
+.preview-container::-webkit-scrollbar-thumb:hover {
+  background: #95a5a6;
 }
 
 /* Plugin Locations */
@@ -175,6 +206,9 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  overflow-y: auto;
+  max-height: 500px;
+  padding-right: 0.5rem;
 }
 
 .config-field {
@@ -308,10 +342,23 @@ input:checked + .slider:before {
   .plugin-config-section h4,
   .plugin-preview-section h4 {
     color: #ecf0f1;
+    background: #34495e;
   }
 
   .preview-container {
     background: #2c3e50;
+  }
+
+  .preview-container::-webkit-scrollbar-track {
+    background: #34495e;
+  }
+
+  .preview-container::-webkit-scrollbar-thumb {
+    background: #7f8c8d;
+  }
+
+  .preview-container::-webkit-scrollbar-thumb:hover {
+    background: #95a5a6;
   }
 
   .config-field label {
@@ -338,12 +385,8 @@ input:checked + .slider:before {
 }
 
 /* Responsive Design */
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
   .plugins-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .plugin-content {
     grid-template-columns: 1fr;
   }
 }
@@ -355,6 +398,11 @@ input:checked + .slider:before {
 
   .plugin-card {
     padding: 1rem;
+  }
+
+  .plugin-content {
+    grid-template-columns: 1fr;
+    gap: 1rem;
   }
 
   .group-tabs {
@@ -370,12 +418,13 @@ input:checked + .slider:before {
     margin-bottom: 1rem;
   }
 
-  .plugin-content {
-    gap: 1rem;
-  }
-
   .plugin-config-section,
   .plugin-preview-section {
     padding: 1rem;
+  }
+
+  .preview-container,
+  .config-editor {
+    max-height: 300px;
   }
 }
