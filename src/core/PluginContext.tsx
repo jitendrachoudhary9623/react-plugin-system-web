@@ -26,11 +26,12 @@ export const PluginProvider: React.FC<{ sellerId: string; children: React.ReactN
   const refreshPlugins = async (sellerId: string) => {
     try {
       setLoading(true);
+      setError(null);
       const plugins = await api.getEnabledPlugins(sellerId);
       setEnabledPlugins(plugins);
-      setError(null);
     } catch (err) {
       setError(err as Error);
+      console.error('Error refreshing plugins:', err);
     } finally {
       setLoading(false);
     }
@@ -42,6 +43,7 @@ export const PluginProvider: React.FC<{ sellerId: string; children: React.ReactN
       await refreshPlugins(sellerId);
     } catch (err) {
       setError(err as Error);
+      console.error('Error toggling plugin:', err);
     }
   };
 

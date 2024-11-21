@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { usePlugins } from '../../core/PluginContext';
 import { Plugin, PluginLocation } from '../../mocks/api';
 import './styles.css';
@@ -8,7 +8,8 @@ interface SellerDashboardProps {
 }
 
 const SellerDashboard: React.FC<SellerDashboardProps> = ({ sellerId }) => {
-  const { enabledPlugins, loading, error, togglePlugin } = usePlugins();
+  const { enabledPlugins, loading, error, togglePlugin, refreshPlugins } = usePlugins();
+  const [isResetting, setIsResetting] = useState(false);
 
   const handleTogglePlugin = async (pluginId: string) => {
     try {
@@ -18,11 +19,20 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ sellerId }) => {
     }
   };
 
-  if (loading) {
+  const handleReset = () => {
+    setIsResetting(true);
+    // Clear localStorage and refresh plugins
+    localStorage.removeItem('store_plugins');
+    refreshPlugins(sellerId).finally(() => {
+      setIsResetting(false);
+    });
+  };
+
+  if (loading || isResetting) {
     return (
       <div className="seller-dashboard loading">
         <div className="loading-spinner"></div>
-        <p>Loading plugins...</p>
+        <p>{isResetting ? 'Resetting plugins...' : 'Loading plugins...'}</p>
       </div>
     );
   }
@@ -79,6 +89,13 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ sellerId }) => {
       <div className="dashboard-header">
         <h1>Plugin Management</h1>
         <p>Enable or disable plugins to customize your store</p>
+        <button 
+          className="reset-button"
+          onClick={handleReset}
+          title="Reset all plugin settings to their default state"
+        >
+          Reset to Defaults
+        </button>
       </div>
 
       <div className="plugins-section">
