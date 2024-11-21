@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import PluginManager, { PluginComponent, PluginService } from './PluginManager';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import PluginManager, { PluginComponent, PluginService } from '../core/PluginManager';
 import { api, Plugin } from '../mocks/api';
 
 interface PluginContextType {
@@ -14,7 +14,12 @@ interface PluginContextType {
 
 const PluginContext = createContext<PluginContextType | undefined>(undefined);
 
-export const PluginProvider: React.FC<{ sellerId: string; children: React.ReactNode }> = ({
+interface PluginProviderProps {
+  sellerId: string;
+  children: React.ReactNode;
+}
+
+export const PluginProvider: React.FC<PluginProviderProps> = ({
   sellerId,
   children,
 }) => {
@@ -23,35 +28,38 @@ export const PluginProvider: React.FC<{ sellerId: string; children: React.ReactN
   const [error, setError] = useState<Error | null>(null);
   const pluginManager = PluginManager.getInstance();
 
-  const refreshPlugins = async (sellerId: string) => {
+  const refreshPlugins = useCallback(async (sellerId: string) => {
     try {
       setLoading(true);
       setError(null);
       const plugins = await api.getEnabledPlugins(sellerId);
       setEnabledPlugins(plugins);
     } catch (err) {
-      setError(err as Error);
-      console.error('Error refreshing plugins:', err);
+      const error = err instanceof Error ? err : new Error('Failed to refresh plugins');
+      setError(error);
+      console.error('Error refreshing plugins:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const togglePlugin = async (sellerId: string, pluginId: string) => {
+  const togglePlugin = useCallback(async (sellerId: string, pluginId: string) => {
     try {
+      setError(null);
       await api.togglePlugin(sellerId, pluginId);
       await refreshPlugins(sellerId);
     } catch (err) {
-      setError(err as Error);
-      console.error('Error toggling plugin:', err);
+      const error = err instanceof Error ? err : new Error('Failed to toggle plugin');
+      setError(error);
+      console.error('Error toggling plugin:', error);
     }
-  };
+  }, [refreshPlugins]);
 
   useEffect(() => {
     refreshPlugins(sellerId);
-  }, [sellerId]);
+  }, [sellerId, refreshPlugins]);
 
-  const value = {
+  const value: PluginContextType = {
     components: pluginManager.getAllComponents(),
     services: pluginManager.getAllServices(),
     enabledPlugins,
@@ -64,7 +72,7 @@ export const PluginProvider: React.FC<{ sellerId: string; children: React.ReactN
   return <PluginContext.Provider value={value}>{children}</PluginContext.Provider>;
 };
 
-export const usePlugins = () => {
+export const usePlugins = (): PluginContextType => {
   const context = useContext(PluginContext);
   if (context === undefined) {
     throw new Error('usePlugins must be used within a PluginProvider');
