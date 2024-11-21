@@ -174,14 +174,22 @@ const PluginCard: React.FC<{
 };
 
 const SellerDashboard: React.FC<{ sellerId: string }> = ({ sellerId }) => {
-  const { enabledPlugins, loading, error, togglePlugin, updateConfigField } = usePlugins();
+  const { enabledPlugins, loading, error, togglePlugin, updateConfigField, refreshPlugins } = usePlugins();
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const [isResetting, setIsResetting] = useState(false);
 
-  if (loading) {
+  const handleReset = async () => {
+    setIsResetting(true);
+    localStorage.removeItem('store_plugins');
+    await refreshPlugins(sellerId);
+    setIsResetting(false);
+  };
+
+  if (loading || isResetting) {
     return (
       <div className="seller-dashboard loading">
         <div className="loading-spinner"></div>
-        <p>Loading plugins...</p>
+        <p>{isResetting ? 'Resetting plugins...' : 'Loading plugins...'}</p>
       </div>
     );
   }
@@ -194,31 +202,30 @@ const SellerDashboard: React.FC<{ sellerId: string }> = ({ sellerId }) => {
     );
   }
 
-  const handleTogglePlugin = async (pluginId: string) => {
-    try {
-      await togglePlugin(sellerId, pluginId);
-    } catch (err) {
-      console.error('Failed to toggle plugin:', err);
-    }
-  };
-
-  const handleConfigUpdate = async (pluginId: string, key: string, value: any) => {
-    try {
-      await updateConfigField(pluginId, key, value);
-    } catch (err) {
-      console.error('Failed to update plugin config:', err);
-    }
-  };
-
   return (
     <div className="seller-dashboard">
       <div className="dashboard-header">
         <h1>Plugin Management</h1>
         <p>Enable, disable, and configure plugins for your store</p>
+        <div className="dashboard-actions">
+          <button 
+            className="reset-button"
+            onClick={handleReset}
+            title="Reset plugins to default state"
+          >
+            Reset to Default State
+          </button>
+        </div>
       </div>
 
       <div className="location-groups">
         <div className="group-tabs">
+          <button
+            className={`group-tab ${selectedGroup === null ? 'active' : ''}`}
+            onClick={() => setSelectedGroup(null)}
+          >
+            All Plugins
+          </button>
           {locationGroups.map(group => (
             <button
               key={group.name}
@@ -248,8 +255,8 @@ const SellerDashboard: React.FC<{ sellerId: string }> = ({ sellerId }) => {
                   <PluginCard
                     key={plugin.id}
                     plugin={plugin}
-                    onToggle={() => handleTogglePlugin(plugin.id)}
-                    onConfigUpdate={(key, value) => handleConfigUpdate(plugin.id, key, value)}
+                    onToggle={() => togglePlugin(sellerId, plugin.id)}
+                    onConfigUpdate={(key, value) => updateConfigField(plugin.id, key, value)}
                   />
                 ))}
             </div>
@@ -258,14 +265,13 @@ const SellerDashboard: React.FC<{ sellerId: string }> = ({ sellerId }) => {
 
         {!selectedGroup && (
           <div className="all-plugins">
-            <h2>All Plugins</h2>
             <div className="plugins-grid">
               {enabledPlugins.map(plugin => (
                 <PluginCard
                   key={plugin.id}
                   plugin={plugin}
-                  onToggle={() => handleTogglePlugin(plugin.id)}
-                  onConfigUpdate={(key, value) => handleConfigUpdate(plugin.id, key, value)}
+                  onToggle={() => togglePlugin(sellerId, plugin.id)}
+                  onConfigUpdate={(key, value) => updateConfigField(plugin.id, key, value)}
                 />
               ))}
             </div>

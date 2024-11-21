@@ -38,6 +38,54 @@ const getStoredPlugins = (): Plugin[] => {
   // Initial plugins configuration
   const initialPlugins: Plugin[] = [
     {
+      id: 'user-greeting',
+      name: 'User Greeting',
+      description: 'Displays personalized greeting using shared user data',
+      type: 'ui',
+      enabled: true,
+      entryPoint: 'UserGreeting',
+      locations: ['header'],
+      config: {
+        showName: true,
+        greeting: 'Welcome back',
+        fontSize: 16,
+        textColor: '#2c3e50'
+      },
+      configFields: [
+        {
+          type: 'boolean',
+          label: 'Show User Name',
+          key: 'showName',
+          value: true
+        },
+        {
+          type: 'text',
+          label: 'Greeting Text',
+          key: 'greeting',
+          value: 'Welcome back',
+          validation: {
+            required: true
+          }
+        },
+        {
+          type: 'number',
+          label: 'Font Size (px)',
+          key: 'fontSize',
+          value: 16,
+          validation: {
+            min: 12,
+            max: 24
+          }
+        },
+        {
+          type: 'color',
+          label: 'Text Color',
+          key: 'textColor',
+          value: '#2c3e50'
+        }
+      ]
+    },
+    {
       id: 'cart-summary-plugin',
       name: 'Cart Summary Plugin',
       description: 'Shows cart summary with configurable display options',
@@ -96,52 +144,29 @@ const getStoredPlugins = (): Plugin[] => {
       ]
     },
     {
-      id: 'user-greeting',
-      name: 'User Greeting',
-      description: 'Displays personalized greeting using shared user data',
+      id: 'discount-banner',
+      name: 'Discount Banner',
+      description: 'Displays promotional discounts to buyers',
       type: 'ui',
       enabled: true,
-      entryPoint: 'UserGreeting',
-      locations: ['header'],
+      entryPoint: 'DiscountBanner',
+      locations: ['home-banner', 'product-list'],
       config: {
-        showName: true,
-        greeting: 'Welcome back',
-        fontSize: 16,
-        textColor: '#2c3e50'
-      },
-      configFields: [
-        {
-          type: 'boolean',
-          label: 'Show User Name',
-          key: 'showName',
-          value: true
-        },
-        {
-          type: 'text',
-          label: 'Greeting Text',
-          key: 'greeting',
-          value: 'Welcome back',
-          validation: {
-            required: true
-          }
-        },
-        {
-          type: 'number',
-          label: 'Font Size (px)',
-          key: 'fontSize',
-          value: 16,
-          validation: {
-            min: 12,
-            max: 24
-          }
-        },
-        {
-          type: 'color',
-          label: 'Text Color',
-          key: 'textColor',
-          value: '#2c3e50'
-        }
-      ]
+        message: 'Special Offer!',
+        discount: 20
+      }
+    },
+    {
+      id: 'recommendation-engine',
+      name: 'Recommendation Engine',
+      description: 'Provides product recommendations',
+      type: 'integration',
+      enabled: true,
+      entryPoint: 'RecommendationsComponent',
+      locations: ['product-detail', 'cart-summary'],
+      config: {
+        maxItems: 3
+      }
     }
   ];
 

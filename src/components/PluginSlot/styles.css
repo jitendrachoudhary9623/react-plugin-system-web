@@ -1,94 +1,206 @@
 .plugin-slot {
   width: 100%;
-  margin: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.plugin-slot-item {
-  margin-bottom: 1rem;
+.plugin-wrapper {
+  position: relative;
+  width: 100%;
+  animation: fadeIn 0.3s ease-out;
 }
 
-.plugin-slot-item:last-child {
-  margin-bottom: 0;
-}
-
-/* Location-specific styles */
-.plugin-slot-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.plugin-slot-footer {
-  margin-top: auto;
-}
-
-.plugin-slot-home-banner {
-  margin: 0 0 2rem 0;
-}
-
-.plugin-slot-product-detail {
-  margin: 1rem 0;
-}
-
-.plugin-slot-cart-summary {
-  padding: 1rem;
+/* Loading State */
+.plugin-loading {
+  padding: 1.5rem;
   background: #f8f9fa;
   border-radius: 8px;
-}
-
-.plugin-slot-sidebar {
-  padding: 1rem;
-}
-
-/* Loading State Styles */
-.plugin-loading {
+  color: #6c757d;
+  text-align: center;
+  font-size: 0.9rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
-  background: #f8f9fa;
-  border-radius: 4px;
+  gap: 0.75rem;
+  min-height: 80px;
+  border: 1px solid #e9ecef;
+}
+
+.loading-text {
+  display: flex;
+  align-items: center;
   gap: 0.5rem;
 }
 
-.plugin-loading-spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid #f3f3f3;
-  border-top: 2px solid #3498db;
+.loading-text::after {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #6c757d;
+  border-top-color: transparent;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Error State Styles */
+/* Error State */
 .plugin-error {
-  padding: 1rem;
-  background: #fde8e8;
+  padding: 1.5rem;
+  background: #fff3f3;
+  border: 1px solid #ffcdd2;
+  border-radius: 8px;
   color: #e74c3c;
-  border-radius: 4px;
-  text-align: center;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+  align-items: flex-start;
+  gap: 1rem;
+  min-height: 80px;
 }
 
-/* Responsive Design */
+.error-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.error-content {
+  flex: 1;
+}
+
+.error-title {
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.error-message {
+  font-size: 0.9rem;
+  color: #c0392b;
+}
+
+/* Location-specific styles */
+.plugin-slot[data-location="header"] {
+  margin: 0;
+}
+
+.plugin-slot[data-location="header"] .plugin-wrapper {
+  background: transparent;
+  box-shadow: none;
+}
+
+.plugin-slot[data-location="footer"] {
+  margin: 0;
+}
+
+.plugin-slot[data-location="footer"] .plugin-wrapper {
+  background: transparent;
+  box-shadow: none;
+}
+
+.plugin-slot[data-location="home-banner"] {
+  margin: 1rem 0;
+}
+
+.plugin-slot[data-location="home-banner"] .plugin-wrapper {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.plugin-slot[data-location="product-detail"] {
+  margin: 1.5rem 0;
+}
+
+.plugin-slot[data-location="cart-summary"] {
+  margin: 1rem 0;
+}
+
+/* Plugin transitions */
+.plugin-wrapper {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.plugin-wrapper:hover {
+  z-index: 1;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive design */
 @media (max-width: 768px) {
   .plugin-slot {
-    margin: 0.5rem 0;
+    gap: 0.75rem;
   }
 
-  .plugin-slot-sidebar {
-    padding: 0.5rem;
+  .plugin-loading,
+  .plugin-error {
+    padding: 1rem;
+    min-height: 60px;
+    font-size: 0.85rem;
   }
 
-  .plugin-slot-cart-summary {
-    padding: 0.5rem;
+  .error-icon {
+    font-size: 1.25rem;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .plugin-loading {
+    background: #2c3e50;
+    border-color: #34495e;
+    color: #bdc3c7;
+  }
+
+  .plugin-loading::after {
+    border-color: #bdc3c7;
+    border-top-color: transparent;
+  }
+
+  .plugin-error {
+    background: #4a1c17;
+    border-color: #7c2c23;
+    color: #ff8a80;
+  }
+
+  .error-message {
+    color: #ff8a80;
+  }
+
+  .plugin-slot[data-location="header"] .plugin-wrapper,
+  .plugin-slot[data-location="footer"] .plugin-wrapper {
+    background: transparent;
+  }
+}
+
+/* Plugin-specific styles */
+.plugin-wrapper[data-plugin-id="user-greeting"] {
+  background: transparent;
+  box-shadow: none;
+}
+
+.plugin-wrapper[data-plugin-id="cart-summary-plugin"] {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+  .plugin-wrapper[data-plugin-id="cart-summary-plugin"] {
+    background: #2c3e50;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   }
 }

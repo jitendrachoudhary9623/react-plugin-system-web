@@ -67,9 +67,9 @@
   height: 2px;
   background-color: #3498db;
   border-radius: 2px;
+  animation: underlineSlide 0.3s ease forwards;
 }
 
-/* Header User Section (Plugin Slot) */
 .header-user {
   min-width: 200px;
   display: flex;
@@ -77,12 +77,7 @@
   align-items: center;
 }
 
-/* Plugin Slot Styles */
-.header-user .plugin-slot {
-  width: 100%;
-}
-
-/* Animation for active link underline */
+/* Animations */
 @keyframes underlineSlide {
   from {
     width: 0;
@@ -92,8 +87,30 @@
   }
 }
 
-.header-nav a.active::after {
-  animation: underlineSlide 0.3s ease forwards;
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .store-header {
+    background: #1a1a1a;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .brand-logo {
+    color: #ecf0f1;
+  }
+
+  .brand-logo:hover {
+    color: #3498db;
+  }
+
+  .header-nav a {
+    color: #ecf0f1;
+  }
+
+  .header-nav a:hover,
+  .header-nav a.active {
+    color: #3498db;
+    background: rgba(52, 152, 219, 0.2);
+  }
 }
 
 /* Responsive Design */
@@ -128,8 +145,16 @@
   }
 }
 
-/* Plugin Slot Animations */
-@keyframes fadeSlideIn {
+/* Plugin Slot Styles */
+.header-user .plugin-slot {
+  width: 100%;
+}
+
+.header-user .plugin-slot > * {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
   from {
     opacity: 0;
     transform: translateY(-10px);
@@ -138,8 +163,4 @@
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-.header-user .plugin-slot > * {
-  animation: fadeSlideIn 0.3s ease-out;
 }

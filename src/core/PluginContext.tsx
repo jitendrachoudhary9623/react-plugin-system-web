@@ -1,13 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import PluginManager, {
-  PluginComponent,
-  PluginService,
-  SharedData,
-  PluginEvent,
-  PluginEventHandler,
-  PluginConfigField
-} from './PluginManager';
+import PluginManager, { PluginComponent, PluginService, PluginEvent } from './PluginManager';
 import { api, Plugin } from '../mocks/api';
+
+// Import all plugins
+import { register as registerDiscountBanner } from '../plugins/DiscountBanner';
+import { register as registerRecommendationEngine } from '../plugins/RecommendationEngine';
+import { register as registerCartSummaryPlugin } from '../plugins/CartSummaryPlugin';
+import { register as registerUserGreeting } from '../plugins/UserGreeting';
 
 interface PluginContextType {
   components: Map<string, PluginComponent>;
@@ -17,14 +16,9 @@ interface PluginContextType {
   error: Error | null;
   refreshPlugins: (sellerId: string) => Promise<void>;
   togglePlugin: (sellerId: string, pluginId: string) => Promise<void>;
-  // New functionality
-  sharedData: SharedData;
-  setSharedData: <T>(key: string, value: T) => void;
-  addEventListener: (type: string, handler: PluginEventHandler) => void;
-  removeEventListener: (type: string, handler: PluginEventHandler) => void;
-  dispatchEvent: (event: PluginEvent) => void;
-  getConfigFields: (pluginId: string) => PluginConfigField[];
+  getConfigFields: (pluginId: string) => any[];
   updateConfigField: (pluginId: string, key: string, value: any) => void;
+  dispatchEvent: (event: PluginEvent) => void;
 }
 
 const PluginContext = createContext<PluginContextType | undefined>(undefined);
@@ -32,25 +26,42 @@ const PluginContext = createContext<PluginContextType | undefined>(undefined);
 interface PluginProviderProps {
   sellerId: string;
   children: React.ReactNode;
-  initialSharedData?: SharedData;
 }
 
 export const PluginProvider: React.FC<PluginProviderProps> = ({
   sellerId,
   children,
-  initialSharedData = {}
 }) => {
   const [enabledPlugins, setEnabledPlugins] = useState<Plugin[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const pluginManager = PluginManager.getInstance();
 
-  // Initialize shared data
+  // Initialize plugins
   useEffect(() => {
-    Object.entries(initialSharedData).forEach(([key, value]) => {
-      pluginManager.setSharedData(key, value);
+    // Register all plugins
+    registerDiscountBanner(pluginManager);
+    registerRecommendationEngine(pluginManager);
+    registerCartSummaryPlugin(pluginManager);
+    registerUserGreeting(pluginManager);
+
+    // Initialize shared data
+    pluginManager.setSharedData('user', {
+      id: 'user-123',
+      name: 'John Doe',
+      email: 'john@example.com',
+      role: 'buyer'
     });
-  }, [initialSharedData]);
+
+    pluginManager.setSharedData('cart', {
+      items: [
+        { id: '1', name: 'Premium Laptop', price: 999.99, quantity: 1 },
+        { id: '2', name: 'Wireless Earbuds', price: 149.99, quantity: 2 },
+        { id: '3', name: 'Smart Watch', price: 299.99, quantity: 1 }
+      ],
+      total: 1599.96
+    });
+  }, []);
 
   const refreshPlugins = useCallback(async (sellerId: string) => {
     try {
@@ -79,38 +90,28 @@ export const PluginProvider: React.FC<PluginProviderProps> = ({
     }
   }, [refreshPlugins]);
 
-  // Shared data management
-  const setSharedData = useCallback(<T,>(key: string, value: T) => {
-    pluginManager.setSharedData(key, value);
-  }, []);
+  const getConfigFields = useCallback((pluginId: string) => {
+    const plugin = enabledPlugins.find(p => p.id === pluginId);
+    return plugin?.configFields || [];
+  }, [enabledPlugins]);
 
-  // Event management
-  const addEventListener = useCallback((type: string, handler: PluginEventHandler) => {
-    pluginManager.addEventListener(type, handler);
-  }, []);
-
-  const removeEventListener = useCallback((type: string, handler: PluginEventHandler) => {
-    pluginManager.removeEventListener(type, handler);
-  }, []);
+  const updateConfigField = useCallback((pluginId: string, key: string, value: any) => {
+    const plugin = enabledPlugins.find(p => p.id === pluginId);
+    if (plugin && plugin.config) {
+      plugin.config[key] = value;
+      setEnabledPlugins([...enabledPlugins]);
+    }
+  }, [enabledPlugins]);
 
   const dispatchEvent = useCallback((event: PluginEvent) => {
     pluginManager.dispatchEvent(event);
-  }, []);
-
-  // Config management
-  const getConfigFields = useCallback((pluginId: string) => {
-    return pluginManager.getConfigFields(pluginId);
-  }, []);
-
-  const updateConfigField = useCallback((pluginId: string, key: string, value: any) => {
-    pluginManager.updateConfigField(pluginId, key, value);
   }, []);
 
   useEffect(() => {
     refreshPlugins(sellerId);
   }, [sellerId, refreshPlugins]);
 
-  const value: PluginContextType = {
+  const value = {
     components: pluginManager.getAllComponents(),
     services: pluginManager.getAllServices(),
     enabledPlugins,
@@ -118,13 +119,9 @@ export const PluginProvider: React.FC<PluginProviderProps> = ({
     error,
     refreshPlugins,
     togglePlugin,
-    sharedData: pluginManager['sharedData'], // Access internal state
-    setSharedData,
-    addEventListener,
-    removeEventListener,
-    dispatchEvent,
     getConfigFields,
     updateConfigField,
+    dispatchEvent,
   };
 
   return <PluginContext.Provider value={value}>{children}</PluginContext.Provider>;
@@ -139,23 +136,29 @@ export const usePlugins = (): PluginContextType => {
 };
 
 // Custom hooks for plugin functionality
-export const usePluginEvent = (type: string, handler: PluginEventHandler) => {
-  const { addEventListener, removeEventListener } = usePlugins();
+export const usePluginEvent = (type: string, handler: (event: any) => void) => {
+  const pluginManager = PluginManager.getInstance();
 
   useEffect(() => {
-    addEventListener(type, handler);
-    return () => removeEventListener(type, handler);
-  }, [type, handler, addEventListener, removeEventListener]);
+    pluginManager.addEventListener(type, handler);
+    return () => pluginManager.removeEventListener(type, handler);
+  }, [type, handler]);
 };
 
 export const useSharedData = <T,>(key: string): [T | undefined, (value: T) => void] => {
-  const { sharedData, setSharedData } = usePlugins();
-  const value = sharedData[key] as T | undefined;
-  const setValue = useCallback((newValue: T) => {
-    setSharedData(key, newValue);
-  }, [key, setSharedData]);
+  const pluginManager = PluginManager.getInstance();
+  const [value, setValue] = useState<T | undefined>(pluginManager.getSharedData(key));
 
-  return [value, setValue];
+  const updateValue = useCallback((newValue: T) => {
+    pluginManager.setSharedData(key, newValue);
+    setValue(newValue);
+  }, [key]);
+
+  useEffect(() => {
+    setValue(pluginManager.getSharedData(key));
+  }, [key]);
+
+  return [value, updateValue];
 };
 
 export default PluginContext;

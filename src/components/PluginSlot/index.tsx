@@ -1,93 +1,93 @@
-import React, { Suspense, useEffect, useState } from 'react';
+import React from 'react';
 import { usePlugins } from '../../core/PluginContext';
-import { Plugin, PluginLocation } from '../../mocks/api';
+import { PluginLocation } from '../../mocks/api';
 import './styles.css';
 
 interface PluginSlotProps {
   location: PluginLocation;
-  productId?: string; // Optional: For product-specific plugins
-  className?: string;
+  [key: string]: any; // Allow any additional props
 }
 
-const PluginSlot: React.FC<PluginSlotProps> = ({ 
-  location, 
-  productId,
-  className = ''
-}) => {
+const PluginSlot: React.FC<PluginSlotProps> = ({ location, ...additionalProps }) => {
   const { components, enabledPlugins } = usePlugins();
-  const [locationPlugins, setLocationPlugins] = useState<Plugin[]>([]);
 
-  useEffect(() => {
-    // Filter plugins for this location
-    const plugins = enabledPlugins.filter(
-      plugin => plugin.enabled && plugin.locations.includes(location)
-    );
-    setLocationPlugins(plugins);
-  }, [enabledPlugins, location]);
-
-  const renderPlugin = (plugin: Plugin) => {
-    const Component = components.get(plugin.entryPoint);
-    if (!Component) {
-      console.warn(`Component ${plugin.entryPoint} not found`);
-      return null;
-    }
-
-    return (
-      <div key={plugin.id} className="plugin-slot-item">
-        <ErrorBoundary>
-          <Suspense fallback={<PluginLoadingState />}>
-            <Component 
-              {...plugin.config} 
-              productId={productId}
-            />
-          </Suspense>
-        </ErrorBoundary>
-      </div>
-    );
-  };
+  // Filter plugins for this location
+  const locationPlugins = enabledPlugins.filter(
+    plugin => plugin.enabled && plugin.locations.includes(location)
+  );
 
   if (locationPlugins.length === 0) {
-    return null;
+    return null; // Don't render empty plugin slots
   }
 
   return (
-    <div className={`plugin-slot plugin-slot-${location} ${className}`.trim()}>
-      {locationPlugins.map(renderPlugin)}
+    <div className="plugin-slot" data-location={location}>
+      {locationPlugins.map(plugin => {
+        const PluginComponent = components.get(plugin.entryPoint);
+        if (!PluginComponent) {
+          console.warn(`Plugin component ${plugin.entryPoint} not found`);
+          return null;
+        }
+
+        // Merge plugin config with additional props
+        const pluginProps = {
+          ...plugin.config,
+          ...additionalProps,
+          pluginId: plugin.id, // Pass plugin ID to component
+          pluginName: plugin.name // Pass plugin name to component
+        };
+
+        return (
+          <React.Suspense
+            key={plugin.id}
+            fallback={
+              <div className="plugin-loading">
+                <span className="loading-text">Loading {plugin.name}...</span>
+              </div>
+            }
+          >
+            <ErrorBoundary pluginName={plugin.name}>
+              <div className="plugin-wrapper" data-plugin-id={plugin.id}>
+                <PluginComponent {...pluginProps} />
+              </div>
+            </ErrorBoundary>
+          </React.Suspense>
+        );
+      })}
     </div>
   );
 };
 
-// Loading State Component
-const PluginLoadingState: React.FC = () => (
-  <div className="plugin-loading">
-    <div className="plugin-loading-spinner"></div>
-    <span>Loading plugin...</span>
-  </div>
-);
-
-// Error Boundary Component
+// Error Boundary for Plugin isolation
 class ErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { hasError: boolean }
+  { children: React.ReactNode; pluginName: string },
+  { hasError: boolean; error?: Error }
 > {
-  constructor(props: { children: React.ReactNode }) {
+  constructor(props: { children: React.ReactNode; pluginName: string }) {
     super(props);
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(_: Error) {
-    return { hasError: true };
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Plugin Error:', error, errorInfo);
+    console.error(`Error in plugin ${this.props.pluginName}:`, error);
+    console.error('Component stack:', errorInfo.componentStack);
   }
 
   render() {
     if (this.state.hasError) {
       return (
         <div className="plugin-error">
-          <span>⚠️ Plugin failed to load</span>
+          <span className="error-icon">⚠️</span>
+          <div className="error-content">
+            <div className="error-title">Failed to load {this.props.pluginName}</div>
+            {this.state.error && (
+              <div className="error-message">{this.state.error.message}</div>
+            )}
+          </div>
         </div>
       );
     }

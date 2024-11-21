@@ -1,22 +1,84 @@
-.buyer-view-layout {
-  min-height: 100vh;
+.buyer-view {
   display: flex;
   flex-direction: column;
-  background-color: #f5f6fa;
+  min-height: 100vh;
+  background-color: #f8f9fa;
 }
 
-.buyer-view-main {
+.buyer-content {
   flex: 1;
   width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
-  padding-top: 1rem;
-  padding-bottom: 2rem;
+  padding: 2rem;
+  box-sizing: border-box;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .buyer-view-main {
-    padding-top: 0.5rem;
-    padding-bottom: 1rem;
+  .buyer-content {
+    padding: 1rem;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .buyer-view {
+    background-color: #1a1a1a;
+    color: #ffffff;
+  }
+}
+
+/* Loading State */
+.buyer-view.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Error State */
+.buyer-view.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  text-align: center;
+  color: #e74c3c;
+}
+
+/* Plugin Slots */
+.buyer-content .plugin-slot {
+  margin: 1rem 0;
+}
+
+/* Page Transitions */
+.buyer-content > * {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

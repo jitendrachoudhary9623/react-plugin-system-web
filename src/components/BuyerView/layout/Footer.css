@@ -42,66 +42,26 @@
   color: #3498db;
 }
 
-/* Newsletter Section */
-.newsletter {
-  margin-bottom: 1.5rem;
-}
-
-.newsletter p {
-  margin-bottom: 1rem;
-  color: #ecf0f1;
-}
-
-.newsletter-form {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.newsletter-form input {
-  flex: 1;
-  padding: 0.75rem;
-  border: none;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  font-size: 0.9rem;
-}
-
-.newsletter-form input::placeholder {
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.newsletter-form button {
-  padding: 0.75rem 1.5rem;
-  background: #3498db;
-  border: none;
-  border-radius: 4px;
-  color: white;
-  cursor: pointer;
-  transition: background 0.2s ease;
-  font-weight: 500;
-}
-
-.newsletter-form button:hover {
-  background: #2980b9;
-}
-
 /* Social Links */
 .social-links {
   display: flex;
   gap: 1rem;
-  margin-top: 1.5rem;
 }
 
 .social-links a {
   color: #ecf0f1;
   text-decoration: none;
   transition: color 0.2s ease;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 
 .social-links a:hover {
   color: #3498db;
+}
+
+/* Footer Plugins */
+.footer-plugins {
+  margin-bottom: 3rem;
 }
 
 /* Footer Bottom */
@@ -165,14 +125,6 @@
     align-items: center;
   }
 
-  .newsletter-form {
-    flex-direction: column;
-  }
-
-  .newsletter-form button {
-    width: 100%;
-  }
-
   .social-links {
     justify-content: center;
   }
@@ -183,8 +135,8 @@
   }
 }
 
-/* Animation for newsletter form */
-@keyframes slideUp {
+/* Animations */
+@keyframes fadeIn {
   from {
     opacity: 0;
     transform: translateY(10px);
@@ -195,6 +147,39 @@
   }
 }
 
-.newsletter-form {
-  animation: slideUp 0.3s ease-out;
+.footer-sections {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .store-footer {
+    background: #1a1a1a;
+  }
+
+  .footer-section h3 {
+    color: #3498db;
+  }
+
+  .footer-nav a,
+  .social-links a {
+    color: #ecf0f1;
+  }
+
+  .footer-nav a:hover,
+  .social-links a:hover {
+    color: #3498db;
+  }
+
+  .footer-legal a {
+    color: #95a5a6;
+  }
+
+  .footer-legal a:hover {
+    color: #3498db;
+  }
+
+  .copyright {
+    color: #95a5a6;
+  }
 }
