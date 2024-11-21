@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import PluginSlot from '../../PluginSlot';
 import './Header.css';
 
@@ -16,9 +16,31 @@ const Header: React.FC = () => {
         </div>
 
         <nav className="header-nav">
-          <Link to="/">Home</Link>
-          <Link to="/products">Products</Link>
-          <Link to="/cart">Cart</Link>
+          <NavLink 
+            to="/" 
+            className={({ isActive }) => isActive ? 'active' : ''}
+            end
+          >
+            Home
+          </NavLink>
+          <NavLink 
+            to="/products" 
+            className={({ isActive }) => isActive ? 'active' : ''}
+          >
+            Products
+          </NavLink>
+          <NavLink 
+            to="/cart" 
+            className={({ isActive }) => isActive ? 'active' : ''}
+          >
+            Cart
+          </NavLink>
+          <NavLink 
+            to="/seller" 
+            className={({ isActive }) => isActive ? 'active' : ''}
+          >
+            Seller Dashboard
+          </NavLink>
         </nav>
       </div>
     </header>

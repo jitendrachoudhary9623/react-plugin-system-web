@@ -1,8 +1,13 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { PluginProvider } from './core/PluginContext';
 import SellerDashboard from './components/SellerDashboard';
 import BuyerView from './components/BuyerView';
+import HomePage from './components/BuyerView/pages/HomePage';
+import ProductListPage from './components/BuyerView/pages/ProductListPage';
+import ProductDetailPage from './components/BuyerView/pages/ProductDetailPage';
+import CartPage from './components/BuyerView/pages/CartPage';
+import CheckoutPage from './components/BuyerView/pages/CheckoutPage';
 import './App.css';
 
 // Mock seller ID - in a real app, this would come from authentication
@@ -13,27 +18,21 @@ function App() {
     <Router>
       <PluginProvider sellerId={MOCK_SELLER_ID}>
         <div className="app">
-          <nav className="app-nav">
-            <div className="nav-brand">Plugin Management System</div>
-            <div className="nav-links">
-              <Link to="/seller">Seller Dashboard</Link>
-              <Link to="/buyer">Buyer View</Link>
-            </div>
-          </nav>
-
           <Routes>
-            <Route 
-              path="/seller" 
-              element={<SellerDashboard sellerId={MOCK_SELLER_ID} />} 
-            />
-            <Route 
-              path="/buyer" 
-              element={<BuyerView />} 
-            />
-            <Route 
-              path="/" 
-              element={<SellerDashboard sellerId={MOCK_SELLER_ID} />} 
-            />
+            {/* Seller Routes */}
+            <Route path="/seller/*" element={<SellerDashboard sellerId={MOCK_SELLER_ID} />} />
+
+            {/* Buyer Routes */}
+            <Route path="/" element={<BuyerView />}>
+              <Route index element={<HomePage />} />
+              <Route path="products" element={<ProductListPage />} />
+              <Route path="product/:id" element={<ProductDetailPage />} />
+              <Route path="cart" element={<CartPage />} />
+              <Route path="checkout" element={<CheckoutPage />} />
+            </Route>
+
+            {/* Redirect unknown routes to home */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
       </PluginProvider>
