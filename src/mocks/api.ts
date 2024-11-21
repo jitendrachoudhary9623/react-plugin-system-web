@@ -13,7 +13,8 @@ export type PluginLocation =
   | 'sidebar'
   | 'product-gallery'
   | 'product-badges'
-  | 'product-customization';
+  | 'product-customization'
+  | 'top-banner';
 
 // Mock API responses
 export interface Plugin {
@@ -37,6 +38,66 @@ const getStoredPlugins = (): Plugin[] => {
 
   // Initial plugins configuration
   const initialPlugins: Plugin[] = [
+    {
+      id: 'marquee-plugin',
+      name: 'Marquee Offers',
+      description: 'Displays scrolling offers and announcements',
+      type: 'ui',
+      enabled: true,
+      entryPoint: 'MarqueePlugin',
+      locations: ['top-banner'],
+      config: {
+        speed: 30,
+        backgroundColor: '#3498db',
+        textColor: '#ffffff',
+        offers: [
+          {
+            id: '1',
+            text: '🔥 Hot Deal! 50% off on Electronics - Shop Now!',
+            link: '/products?category=electronics'
+          },
+          {
+            id: '2',
+            text: '🎉 Free Shipping on orders above $50',
+            link: '/shipping'
+          },
+          {
+            id: '3',
+            text: '🎁 Special Holiday Offers - Limited Time Only',
+            link: '/offers'
+          },
+          {
+            id: '4',
+            text: '🌟 New Collection Launched - Check it out!',
+            link: '/new-arrivals'
+          }
+        ]
+      },
+      configFields: [
+        {
+          type: 'number',
+          label: 'Animation Speed',
+          key: 'speed',
+          value: 30,
+          validation: {
+            min: 10,
+            max: 60
+          }
+        },
+        {
+          type: 'color',
+          label: 'Background Color',
+          key: 'backgroundColor',
+          value: '#3498db'
+        },
+        {
+          type: 'color',
+          label: 'Text Color',
+          key: 'textColor',
+          value: '#ffffff'
+        }
+      ]
+    },
     {
       id: 'user-greeting',
       name: 'User Greeting',
@@ -142,31 +203,6 @@ const getStoredPlugins = (): Plugin[] => {
           }
         }
       ]
-    },
-    {
-      id: 'discount-banner',
-      name: 'Discount Banner',
-      description: 'Displays promotional discounts to buyers',
-      type: 'ui',
-      enabled: true,
-      entryPoint: 'DiscountBanner',
-      locations: ['home-banner', 'product-list'],
-      config: {
-        message: 'Special Offer!',
-        discount: 20
-      }
-    },
-    {
-      id: 'recommendation-engine',
-      name: 'Recommendation Engine',
-      description: 'Provides product recommendations',
-      type: 'integration',
-      enabled: true,
-      entryPoint: 'RecommendationsComponent',
-      locations: ['product-detail', 'cart-summary'],
-      config: {
-        maxItems: 3
-      }
     }
   ];
 

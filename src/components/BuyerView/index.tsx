@@ -7,11 +7,15 @@ import ProductListPage from './pages/ProductListPage';
 import ProductDetailPage from './pages/ProductDetailPage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
+import PluginSlot from '../PluginSlot';
 import './styles.css';
 
 const BuyerView: React.FC = () => {
   return (
     <div className="buyer-view">
+      <div className="top-banner">
+        <PluginSlot location="top-banner" />
+      </div>
       <Header />
       <main className="buyer-content">
         <Routes>

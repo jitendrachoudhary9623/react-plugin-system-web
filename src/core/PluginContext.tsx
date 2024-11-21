@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import PluginManager, { PluginComponent, PluginService, PluginEvent } from './PluginManager';
+import PluginManager, { PluginComponent, PluginService } from './PluginManager';
 import { api, Plugin } from '../mocks/api';
 
 // Import all plugins
@@ -7,6 +7,7 @@ import { register as registerDiscountBanner } from '../plugins/DiscountBanner';
 import { register as registerRecommendationEngine } from '../plugins/RecommendationEngine';
 import { register as registerCartSummaryPlugin } from '../plugins/CartSummaryPlugin';
 import { register as registerUserGreeting } from '../plugins/UserGreeting';
+import { register as registerMarqueePlugin } from '../plugins/MarqueePlugin';
 
 interface PluginContextType {
   components: Map<string, PluginComponent>;
@@ -18,7 +19,7 @@ interface PluginContextType {
   togglePlugin: (sellerId: string, pluginId: string) => Promise<void>;
   getConfigFields: (pluginId: string) => any[];
   updateConfigField: (pluginId: string, key: string, value: any) => void;
-  dispatchEvent: (event: PluginEvent) => void;
+  dispatchEvent: (event: any) => void;
 }
 
 const PluginContext = createContext<PluginContextType | undefined>(undefined);
@@ -44,6 +45,7 @@ export const PluginProvider: React.FC<PluginProviderProps> = ({
     registerRecommendationEngine(pluginManager);
     registerCartSummaryPlugin(pluginManager);
     registerUserGreeting(pluginManager);
+    registerMarqueePlugin(pluginManager);
 
     // Initialize shared data
     pluginManager.setSharedData('user', {
@@ -100,10 +102,11 @@ export const PluginProvider: React.FC<PluginProviderProps> = ({
     if (plugin && plugin.config) {
       plugin.config[key] = value;
       setEnabledPlugins([...enabledPlugins]);
+      api.updatePluginConfig(sellerId, pluginId, { [key]: value });
     }
-  }, [enabledPlugins]);
+  }, [enabledPlugins, sellerId]);
 
-  const dispatchEvent = useCallback((event: PluginEvent) => {
+  const dispatchEvent = useCallback((event: any) => {
     pluginManager.dispatchEvent(event);
   }, []);
 

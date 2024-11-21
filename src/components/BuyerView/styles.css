@@ -5,6 +5,13 @@
   background-color: #f8f9fa;
 }
 
+.top-banner {
+  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 1100;
+}
+
 .buyer-content {
   flex: 1;
   width: 100%;
@@ -81,4 +88,20 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Adjust header position for top banner */
+.store-header {
+  position: sticky;
+  top: var(--banner-height, 40px);
+  z-index: 1000;
+}
+
+/* Plugin-specific styles */
+.top-banner .plugin-slot {
+  margin: 0;
+}
+
+.top-banner .marquee-container {
+  border-radius: 0;
 }
