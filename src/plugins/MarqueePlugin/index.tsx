@@ -16,7 +16,7 @@ interface MarqueePluginProps {
   textColor?: string;
   offers?: Offer[];
   pluginId?: string;
-  customOffer?: string;
+  isSellerView?: boolean;
 }
 
 const defaultOffers: Offer[] = [
@@ -48,39 +48,32 @@ const MarqueePlugin: React.FC<MarqueePluginProps> = ({
   textColor = '#ffffff',
   offers = defaultOffers,
   pluginId,
-  customOffer = ''
+  isSellerView = false
 }) => {
   const [config, setConfig] = useState({
     speed,
     backgroundColor,
     textColor,
-    offers: [...offers],
-    customOffer
+    offers: [...offers]
+  });
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
+  const [newOffer, setNewOffer] = useState<Offer>({
+    id: '',
+    text: '',
+    link: '',
+    isExternal: false
   });
 
-  const { getConfigFields } = usePlugins();
+  const { getConfigFields, updateConfigField } = usePlugins();
 
   // Listen for configuration changes
   usePluginEvent('configurationChanged', (event) => {
     if (event.pluginId === pluginId) {
-      setConfig(prev => {
-        const newConfig = { ...prev, [event.key]: event.value };
-        
-        // Handle custom offer updates
-        if (event.key === 'customOffer' && event.value) {
-          const customOfferObj: Offer = {
-            id: 'custom',
-            text: `🎯 ${event.value}`,
-            link: '/custom-offer'
-          };
-          
-          // Remove old custom offer if exists
-          const filteredOffers = prev.offers.filter(o => o.id !== 'custom');
-          newConfig.offers = [customOfferObj, ...filteredOffers];
-        }
-        
-        return newConfig;
-      });
+      setConfig(prev => ({
+        ...prev,
+        [event.key]: event.value
+      }));
     }
   });
 
@@ -91,16 +84,6 @@ const MarqueePlugin: React.FC<MarqueePluginProps> = ({
       const newConfig: any = {};
       fields.forEach(field => {
         newConfig[field.key] = field.value;
-        
-        // Handle initial custom offer
-        if (field.key === 'customOffer' && field.value) {
-          const customOfferObj: Offer = {
-            id: 'custom',
-            text: `🎯 ${field.value}`,
-            link: '/custom-offer'
-          };
-          newConfig.offers = [customOfferObj, ...offers];
-        }
       });
       setConfig(prev => ({
         ...prev,
@@ -108,6 +91,38 @@ const MarqueePlugin: React.FC<MarqueePluginProps> = ({
       }));
     }
   }, [pluginId, getConfigFields]);
+
+  const handleAddOffer = () => {
+    if (newOffer.text && newOffer.link) {
+      const updatedOffers = [...config.offers, { ...newOffer, id: Date.now().toString() }];
+      setConfig(prev => ({ ...prev, offers: updatedOffers }));
+      updateConfigField(pluginId!, 'offers', updatedOffers);
+      setNewOffer({ id: '', text: '', link: '', isExternal: false });
+    }
+  };
+
+  const handleEditOffer = (offer: Offer) => {
+    setEditingOffer(offer);
+    setIsEditing(true);
+  };
+
+  const handleUpdateOffer = () => {
+    if (editingOffer && editingOffer.text && editingOffer.link) {
+      const updatedOffers = config.offers.map(o => 
+        o.id === editingOffer.id ? editingOffer : o
+      );
+      setConfig(prev => ({ ...prev, offers: updatedOffers }));
+      updateConfigField(pluginId!, 'offers', updatedOffers);
+      setEditingOffer(null);
+      setIsEditing(false);
+    }
+  };
+
+  const handleDeleteOffer = (offerId: string) => {
+    const updatedOffers = config.offers.filter(o => o.id !== offerId);
+    setConfig(prev => ({ ...prev, offers: updatedOffers }));
+    updateConfigField(pluginId!, 'offers', updatedOffers);
+  };
 
   const renderOffer = (offer: Offer) => {
     if (offer.isExternal) {
@@ -137,30 +152,104 @@ const MarqueePlugin: React.FC<MarqueePluginProps> = ({
     );
   };
 
+  const renderEditForm = () => (
+    <div className="marquee-edit-form">
+      <h3>{editingOffer ? 'Edit Offer' : 'Add New Offer'}</h3>
+      <div className="form-group">
+        <input
+          type="text"
+          placeholder="Offer Text"
+          value={editingOffer ? editingOffer.text : newOffer.text}
+          onChange={(e) => editingOffer 
+            ? setEditingOffer({ ...editingOffer, text: e.target.value })
+            : setNewOffer({ ...newOffer, text: e.target.value })
+          }
+        />
+        <input
+          type="text"
+          placeholder="Link URL"
+          value={editingOffer ? editingOffer.link : newOffer.link}
+          onChange={(e) => editingOffer
+            ? setEditingOffer({ ...editingOffer, link: e.target.value })
+            : setNewOffer({ ...newOffer, link: e.target.value })
+          }
+        />
+        <label>
+          <input
+            type="checkbox"
+            checked={editingOffer ? editingOffer.isExternal : newOffer.isExternal}
+            onChange={(e) => editingOffer
+              ? setEditingOffer({ ...editingOffer, isExternal: e.target.checked })
+              : setNewOffer({ ...newOffer, isExternal: e.target.checked })
+            }
+          />
+          External Link
+        </label>
+        <div className="form-actions">
+          {editingOffer ? (
+            <>
+              <button onClick={handleUpdateOffer}>Update</button>
+              <button onClick={() => {
+                setEditingOffer(null);
+                setIsEditing(false);
+              }}>Cancel</button>
+            </>
+          ) : (
+            <button onClick={handleAddOffer}>Add</button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderOffersList = () => (
+    <div className="marquee-offers-list">
+      <h3>Current Offers</h3>
+      {config.offers.map(offer => (
+        <div key={offer.id} className="offer-item">
+          <div className="offer-content">
+            <span className="offer-text">{offer.text}</span>
+            <span className="offer-link">{offer.link}</span>
+          </div>
+          <div className="offer-actions">
+            <button onClick={() => handleEditOffer(offer)}>Edit</button>
+            <button onClick={() => handleDeleteOffer(offer.id)}>Delete</button>
+          </div>
+        </div>
+      ))}
+      <button className="add-offer-button" onClick={() => setIsEditing(true)}>
+        Add New Offer
+      </button>
+    </div>
+  );
+
   return (
-    <div 
-      className="marquee-container"
-      style={{ 
-        backgroundColor: config.backgroundColor,
-        '--background-color': config.backgroundColor
-      } as React.CSSProperties}
-    >
+    <div className="marquee-plugin">
       <div 
-        className="marquee-content"
+        className="marquee-container"
         style={{ 
-          animationDuration: `${config.offers.length * config.speed}s`
-        }}
+          backgroundColor: config.backgroundColor,
+          '--background-color': config.backgroundColor
+        } as React.CSSProperties}
       >
-        {config.offers.map(offer => renderOffer(offer))}
+        <div 
+          className="marquee-content"
+          style={{ 
+            animationDuration: `${config.offers.length * config.speed}s`
+          }}
+        >
+          {config.offers.map(offer => renderOffer(offer))}
+        </div>
+        <div 
+          className="marquee-content"
+          style={{ 
+            animationDuration: `${config.offers.length * config.speed}s`
+          }}
+        >
+          {config.offers.map(offer => renderOffer(offer))}
+        </div>
       </div>
-      <div 
-        className="marquee-content"
-        style={{ 
-          animationDuration: `${config.offers.length * config.speed}s`
-        }}
-      >
-        {config.offers.map(offer => renderOffer(offer))}
-      </div>
+      {isSellerView && (isEditing ? renderEditForm() : renderOffersList())}
     </div>
   );
 };
@@ -195,14 +284,6 @@ export const register = (pluginManager: any) => {
       key: 'textColor',
       value: '#ffffff',
       description: 'Color of the text in the marquee'
-    },
-    {
-      type: 'text',
-      label: 'Custom Offer Text',
-      key: 'customOffer',
-      value: '',
-      description: 'Add a custom offer message',
-      affectsSharedData: true
     }
   ]);
 };

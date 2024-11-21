@@ -107,6 +107,9 @@ const ConfigEditor: React.FC<ConfigEditorProps> = ({ pluginId, fields, onUpdate 
             {field.validation?.required && <span className="required">*</span>}
           </label>
           {renderField(field)}
+          {field.description && (
+            <span className="field-description">{field.description}</span>
+          )}
         </div>
       ))}
     </div>
@@ -119,8 +122,11 @@ const PluginCard: React.FC<{
   onConfigUpdate: (key: string, value: any) => void;
 }> = ({ plugin, onToggle, onConfigUpdate }) => {
   const [showConfig, setShowConfig] = useState(false);
-  const { getConfigFields } = usePlugins();
+  const { getConfigFields, components } = usePlugins();
   const configFields = getConfigFields(plugin.id);
+
+  // Get the plugin component
+  const PluginComponent = components.get(plugin.entryPoint);
 
   return (
     <div className="plugin-card">
@@ -148,6 +154,20 @@ const PluginCard: React.FC<{
         </div>
       </div>
 
+      {/* Plugin Preview */}
+      {PluginComponent && (
+        <div className="plugin-preview">
+          <h4>Preview:</h4>
+          <div className="preview-container">
+            <PluginComponent 
+              {...plugin.config} 
+              pluginId={plugin.id}
+              isSellerView={true}
+            />
+          </div>
+        </div>
+      )}
+
       {configFields.length > 0 && (
         <div className="plugin-actions">
           <button
@@ -174,22 +194,14 @@ const PluginCard: React.FC<{
 };
 
 const SellerDashboard: React.FC<{ sellerId: string }> = ({ sellerId }) => {
-  const { enabledPlugins, loading, error, togglePlugin, updateConfigField, refreshPlugins } = usePlugins();
+  const { enabledPlugins, loading, error, togglePlugin, updateConfigField } = usePlugins();
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
-  const [isResetting, setIsResetting] = useState(false);
 
-  const handleReset = async () => {
-    setIsResetting(true);
-    localStorage.removeItem('store_plugins');
-    await refreshPlugins(sellerId);
-    setIsResetting(false);
-  };
-
-  if (loading || isResetting) {
+  if (loading) {
     return (
       <div className="seller-dashboard loading">
         <div className="loading-spinner"></div>
-        <p>{isResetting ? 'Resetting plugins...' : 'Loading plugins...'}</p>
+        <p>Loading plugins...</p>
       </div>
     );
   }
@@ -207,15 +219,6 @@ const SellerDashboard: React.FC<{ sellerId: string }> = ({ sellerId }) => {
       <div className="dashboard-header">
         <h1>Plugin Management</h1>
         <p>Enable, disable, and configure plugins for your store</p>
-        <div className="dashboard-actions">
-          <button 
-            className="reset-button"
-            onClick={handleReset}
-            title="Reset plugins to default state"
-          >
-            Reset to Default State
-          </button>
-        </div>
       </div>
 
       <div className="location-groups">

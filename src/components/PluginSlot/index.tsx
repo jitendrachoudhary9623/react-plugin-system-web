@@ -5,20 +5,17 @@ import './styles.css';
 
 interface PluginSlotProps {
   location: PluginLocation;
+  isSellerView?: boolean;
   [key: string]: any; // Allow any additional props
 }
 
-const PluginSlot: React.FC<PluginSlotProps> = ({ location, ...additionalProps }) => {
+const PluginSlot: React.FC<PluginSlotProps> = ({ location, isSellerView = false, ...additionalProps }) => {
   const { components, enabledPlugins } = usePlugins();
 
   // Filter plugins for this location
   const locationPlugins = enabledPlugins.filter(
     plugin => plugin.enabled && plugin.locations.includes(location)
   );
-
-  if (locationPlugins.length === 0) {
-    return null; // Don't render empty plugin slots
-  }
 
   return (
     <div className="plugin-slot" data-location={location}>
@@ -33,8 +30,8 @@ const PluginSlot: React.FC<PluginSlotProps> = ({ location, ...additionalProps })
         const pluginProps = {
           ...plugin.config,
           ...additionalProps,
-          pluginId: plugin.id, // Pass plugin ID to component
-          pluginName: plugin.name // Pass plugin name to component
+          pluginId: plugin.id,
+          isSellerView
         };
 
         return (
