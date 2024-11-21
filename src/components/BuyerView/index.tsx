@@ -1,82 +1,30 @@
-import React, { Suspense } from 'react';
-import { usePlugins } from '../../core/PluginContext';
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import HomePage from './pages/HomePage';
+import ProductListPage from './pages/ProductListPage';
+import ProductDetailPage from './pages/ProductDetailPage';
+import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
+import Header from './layout/Header';
+import Footer from './layout/Footer';
 import './styles.css';
 
-interface BuyerViewProps {
-  productId?: string;
-}
-
-const BuyerView: React.FC<BuyerViewProps> = ({ productId = '1' }) => {
-  const { components, enabledPlugins } = usePlugins();
-
-  const renderPlugin = (plugin: any) => {
-    if (!plugin.enabled) return null;
-
-    const Component = components.get(plugin.entryPoint);
-    if (!Component) {
-      console.warn(`Component ${plugin.entryPoint} not found`);
-      return null;
-    }
-
-    return (
-      <div key={plugin.id} className="plugin-wrapper">
-        <ErrorBoundary>
-          <Suspense fallback={<div className="plugin-loading">Loading plugin...</div>}>
-            <Component productId={productId} />
-          </Suspense>
-        </ErrorBoundary>
-      </div>
-    );
-  };
-
-  if (!enabledPlugins.length) {
-    return (
-      <div className="buyer-view">
-        <h1>Welcome to Our Store</h1>
-        <div className="no-plugins">No plugins are currently enabled.</div>
-      </div>
-    );
-  }
-
+const BuyerView: React.FC = () => {
   return (
     <div className="buyer-view">
-      <h1>Welcome to Our Store</h1>
-      <div className="plugins-container">
-        {enabledPlugins.map(plugin => renderPlugin(plugin))}
-      </div>
+      <Header />
+      <main className="buyer-view-main">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/products" element={<ProductListPage />} />
+          <Route path="/product/:id" element={<ProductDetailPage />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
+        </Routes>
+      </main>
+      <Footer />
     </div>
   );
 };
-
-// Error Boundary Component
-class ErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { hasError: boolean }
-> {
-  constructor(props: { children: React.ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(_: Error) {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Plugin Error:', error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="plugin-error">
-          Something went wrong loading this plugin.
-        </div>
-      );
-    }
-
-    return this.props.children;
-  }
-}
 
 export default BuyerView;

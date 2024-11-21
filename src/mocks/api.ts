@@ -1,3 +1,18 @@
+// Plugin location types
+export type PluginLocation = 
+  | 'header'
+  | 'footer'
+  | 'home-banner'
+  | 'home-featured'
+  | 'product-list'
+  | 'product-detail'
+  | 'cart-summary'
+  | 'checkout'
+  | 'sidebar'
+  | 'product-gallery'
+  | 'product-badges'
+  | 'product-customization';
+
 // Mock API responses
 export interface Plugin {
   id: string;
@@ -6,6 +21,8 @@ export interface Plugin {
   type: 'ui' | 'integration';
   enabled: boolean;
   entryPoint: string;
+  locations: PluginLocation[];  // Locations where this plugin can be rendered
+  config?: Record<string, any>; // Optional plugin-specific configuration
 }
 
 const mockPlugins: Plugin[] = [
@@ -15,15 +32,77 @@ const mockPlugins: Plugin[] = [
     description: 'Displays promotional discounts to buyers',
     type: 'ui',
     enabled: true,
-    entryPoint: 'DiscountBanner'
+    entryPoint: 'DiscountBanner',
+    locations: ['home-banner', 'product-list'],
+    config: {
+      message: 'Special Offer!',
+      discount: 20
+    }
   },
   {
     id: 'recommendation-engine',
     name: 'Recommendation Engine',
     description: 'Provides product recommendations',
     type: 'integration',
+    enabled: true,
+    entryPoint: 'RecommendationsComponent',
+    locations: ['product-detail', 'cart-summary'],
+    config: {
+      maxItems: 3
+    }
+  },
+  {
+    id: 'seasonal-theme',
+    name: 'Seasonal Theme',
+    description: 'Applies seasonal styling to the store',
+    type: 'ui',
     enabled: false,
-    entryPoint: 'RecommendationsComponent'
+    entryPoint: 'SeasonalTheme',
+    locations: ['header', 'footer'],
+    config: {
+      theme: 'winter',
+      colors: {
+        primary: '#2c3e50',
+        secondary: '#3498db'
+      }
+    }
+  },
+  {
+    id: 'product-gallery',
+    name: 'Enhanced Product Gallery',
+    description: 'Advanced product image gallery with zoom and 360 view',
+    type: 'ui',
+    enabled: true,
+    entryPoint: 'ProductGallery',
+    locations: ['product-gallery'],
+    config: {
+      enableZoom: true,
+      enable360View: true
+    }
+  },
+  {
+    id: 'product-badges',
+    name: 'Product Badges',
+    description: 'Display special badges like "New", "Sale", "Best Seller"',
+    type: 'ui',
+    enabled: true,
+    entryPoint: 'ProductBadges',
+    locations: ['product-badges', 'product-list'],
+    config: {
+      badges: ['new', 'sale', 'best-seller']
+    }
+  },
+  {
+    id: 'product-customizer',
+    name: 'Product Customizer',
+    description: 'Allow customers to customize products',
+    type: 'ui',
+    enabled: true,
+    entryPoint: 'ProductCustomizer',
+    locations: ['product-customization'],
+    config: {
+      options: ['color', 'size', 'text']
+    }
   }
 ];
 
@@ -34,6 +113,18 @@ export const api = {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve(mockPlugins);
+      }, 500);
+    });
+  },
+
+  // Get plugins for a specific location
+  getPluginsForLocation: async (sellerId: string, location: PluginLocation): Promise<Plugin[]> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const plugins = mockPlugins.filter(
+          plugin => plugin.enabled && plugin.locations.includes(location)
+        );
+        resolve(plugins);
       }, 500);
     });
   },
