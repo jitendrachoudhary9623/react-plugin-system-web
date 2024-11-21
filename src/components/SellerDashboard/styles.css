@@ -1,18 +1,40 @@
 .seller-dashboard {
-  padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
+  padding: 2rem;
 }
 
-.seller-dashboard h2 {
+.dashboard-header {
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.dashboard-header h1 {
+  font-size: 2.5rem;
   color: #2c3e50;
-  margin-bottom: 2rem;
-  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.dashboard-header p {
+  color: #7f8c8d;
+  font-size: 1.1rem;
+}
+
+.plugins-section {
+  margin-bottom: 3rem;
+}
+
+.plugins-section h2 {
+  font-size: 1.8rem;
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e9ecef;
 }
 
 .plugins-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 1.5rem;
 }
 
@@ -21,11 +43,11 @@
   border-radius: 8px;
   padding: 1.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .plugin-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
@@ -37,13 +59,13 @@
 }
 
 .plugin-header h3 {
+  font-size: 1.3rem;
+  color: #2c3e50;
   margin: 0;
-  color: #34495e;
-  font-size: 1.25rem;
 }
 
 .plugin-description {
-  color: #666;
+  color: #34495e;
   margin-bottom: 1.5rem;
   line-height: 1.5;
 }
@@ -52,19 +74,27 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.9rem;
+  margin-bottom: 1rem;
 }
 
-.plugin-type {
-  color: #7f8c8d;
-  background: #f7f9fc;
+.plugin-locations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.location-tag {
+  background: #f8f9fa;
+  color: #2c3e50;
   padding: 0.25rem 0.75rem;
   border-radius: 12px;
+  font-size: 0.85rem;
 }
 
 .plugin-status {
   padding: 0.25rem 0.75rem;
   border-radius: 12px;
+  font-size: 0.9rem;
   font-weight: 500;
 }
 
@@ -78,7 +108,7 @@
   color: #e74c3c;
 }
 
-/* Toggle Switch Styles */
+/* Toggle Switch */
 .switch {
   position: relative;
   display: inline-block;
@@ -128,35 +158,80 @@ input:checked + .slider:before {
   transform: translateX(26px);
 }
 
-/* Loading and Error States */
-.dashboard-loading,
-.dashboard-error {
-  text-align: center;
-  padding: 2rem;
-  margin: 2rem;
-  border-radius: 8px;
+/* Plugin Configuration */
+.plugin-config {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e9ecef;
 }
 
-.dashboard-loading {
-  color: #666;
+.plugin-config h4 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.plugin-config pre {
   background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  overflow-x: auto;
+  color: #34495e;
 }
 
-.dashboard-error {
+/* Loading State */
+.seller-dashboard.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 1rem;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Error State */
+.seller-dashboard.error {
+  text-align: center;
+  padding: 3rem;
   color: #e74c3c;
-  background: #fde8e8;
 }
 
+/* Responsive Design */
 @media (max-width: 768px) {
   .seller-dashboard {
     padding: 1rem;
+  }
+
+  .dashboard-header h1 {
+    font-size: 2rem;
   }
 
   .plugins-grid {
     grid-template-columns: 1fr;
   }
 
-  .plugin-card {
-    padding: 1rem;
+  .plugin-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .plugin-status {
+    align-self: flex-end;
   }
 }

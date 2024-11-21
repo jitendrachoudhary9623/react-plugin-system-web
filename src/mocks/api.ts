@@ -21,11 +21,24 @@ export interface Plugin {
   type: 'ui' | 'integration';
   enabled: boolean;
   entryPoint: string;
-  locations: PluginLocation[];  // Locations where this plugin can be rendered
-  config?: Record<string, any>; // Optional plugin-specific configuration
+  locations: PluginLocation[];
+  config?: Record<string, any>;
 }
 
 const mockPlugins: Plugin[] = [
+  {
+    id: 'test-plugin',
+    name: 'Test Plugin',
+    description: 'A simple test plugin to verify the plugin system',
+    type: 'ui',
+    enabled: true,
+    entryPoint: 'TestPlugin',
+    locations: ['header', 'footer', 'home-banner'],
+    config: {
+      message: 'Plugin system is working! 🎉',
+      backgroundColor: '#e3f2fd'
+    }
+  },
   {
     id: 'discount-banner',
     name: 'Discount Banner',
