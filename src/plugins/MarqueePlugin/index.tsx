@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { usePlugins, usePluginEvent } from '../../core/PluginContext';
 import './styles.css';
 
 interface Offer {
@@ -14,6 +15,8 @@ interface MarqueePluginProps {
   backgroundColor?: string;
   textColor?: string;
   offers?: Offer[];
+  pluginId?: string;
+  customOffer?: string;
 }
 
 const defaultOffers: Offer[] = [
@@ -43,8 +46,69 @@ const MarqueePlugin: React.FC<MarqueePluginProps> = ({
   speed = 30,
   backgroundColor = '#3498db',
   textColor = '#ffffff',
-  offers = defaultOffers
+  offers = defaultOffers,
+  pluginId,
+  customOffer = ''
 }) => {
+  const [config, setConfig] = useState({
+    speed,
+    backgroundColor,
+    textColor,
+    offers: [...offers],
+    customOffer
+  });
+
+  const { getConfigFields } = usePlugins();
+
+  // Listen for configuration changes
+  usePluginEvent('configurationChanged', (event) => {
+    if (event.pluginId === pluginId) {
+      setConfig(prev => {
+        const newConfig = { ...prev, [event.key]: event.value };
+        
+        // Handle custom offer updates
+        if (event.key === 'customOffer' && event.value) {
+          const customOfferObj: Offer = {
+            id: 'custom',
+            text: `🎯 ${event.value}`,
+            link: '/custom-offer'
+          };
+          
+          // Remove old custom offer if exists
+          const filteredOffers = prev.offers.filter(o => o.id !== 'custom');
+          newConfig.offers = [customOfferObj, ...filteredOffers];
+        }
+        
+        return newConfig;
+      });
+    }
+  });
+
+  // Initialize configuration from plugin settings
+  useEffect(() => {
+    if (pluginId) {
+      const fields = getConfigFields(pluginId);
+      const newConfig: any = {};
+      fields.forEach(field => {
+        newConfig[field.key] = field.value;
+        
+        // Handle initial custom offer
+        if (field.key === 'customOffer' && field.value) {
+          const customOfferObj: Offer = {
+            id: 'custom',
+            text: `🎯 ${field.value}`,
+            link: '/custom-offer'
+          };
+          newConfig.offers = [customOfferObj, ...offers];
+        }
+      });
+      setConfig(prev => ({
+        ...prev,
+        ...newConfig
+      }));
+    }
+  }, [pluginId, getConfigFields]);
+
   const renderOffer = (offer: Offer) => {
     if (offer.isExternal) {
       return (
@@ -54,6 +118,7 @@ const MarqueePlugin: React.FC<MarqueePluginProps> = ({
           target="_blank"
           rel="noopener noreferrer"
           className="marquee-link"
+          style={{ color: config.textColor }}
         >
           {offer.text}
         </a>
@@ -65,6 +130,7 @@ const MarqueePlugin: React.FC<MarqueePluginProps> = ({
         key={offer.id}
         to={offer.link}
         className="marquee-link"
+        style={{ color: config.textColor }}
       >
         {offer.text}
       </Link>
@@ -74,23 +140,26 @@ const MarqueePlugin: React.FC<MarqueePluginProps> = ({
   return (
     <div 
       className="marquee-container"
-      style={{ backgroundColor, color: textColor }}
+      style={{ 
+        backgroundColor: config.backgroundColor,
+        '--background-color': config.backgroundColor
+      } as React.CSSProperties}
     >
       <div 
         className="marquee-content"
         style={{ 
-          animationDuration: `${offers.length * speed}s`
+          animationDuration: `${config.offers.length * config.speed}s`
         }}
       >
-        {offers.map(offer => renderOffer(offer))}
+        {config.offers.map(offer => renderOffer(offer))}
       </div>
       <div 
         className="marquee-content"
         style={{ 
-          animationDuration: `${offers.length * speed}s`
+          animationDuration: `${config.offers.length * config.speed}s`
         }}
       >
-        {offers.map(offer => renderOffer(offer))}
+        {config.offers.map(offer => renderOffer(offer))}
       </div>
     </div>
   );
@@ -110,19 +179,30 @@ export const register = (pluginManager: any) => {
       validation: {
         min: 10,
         max: 60
-      }
+      },
+      description: 'Speed of the marquee animation (lower is faster)'
     },
     {
       type: 'color',
       label: 'Background Color',
       key: 'backgroundColor',
-      value: '#3498db'
+      value: '#3498db',
+      description: 'Background color of the marquee banner'
     },
     {
       type: 'color',
       label: 'Text Color',
       key: 'textColor',
-      value: '#ffffff'
+      value: '#ffffff',
+      description: 'Color of the text in the marquee'
+    },
+    {
+      type: 'text',
+      label: 'Custom Offer Text',
+      key: 'customOffer',
+      value: '',
+      description: 'Add a custom offer message',
+      affectsSharedData: true
     }
   ]);
 };

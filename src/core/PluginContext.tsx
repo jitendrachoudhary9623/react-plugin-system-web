@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import PluginManager, { PluginComponent, PluginService } from './PluginManager';
+import PluginManager, { PluginComponent, PluginService, PluginEvent, PluginConfigField } from './PluginManager';
 import { api, Plugin } from '../mocks/api';
 
 // Import all plugins
@@ -17,9 +17,9 @@ interface PluginContextType {
   error: Error | null;
   refreshPlugins: (sellerId: string) => Promise<void>;
   togglePlugin: (sellerId: string, pluginId: string) => Promise<void>;
-  getConfigFields: (pluginId: string) => any[];
-  updateConfigField: (pluginId: string, key: string, value: any) => void;
-  dispatchEvent: (event: any) => void;
+  getConfigFields: (pluginId: string) => PluginConfigField[];
+  updateConfigField: (pluginId: string, key: string, value: any) => Promise<void>;
+  dispatchEvent: (event: PluginEvent) => void;
 }
 
 const PluginContext = createContext<PluginContextType | undefined>(undefined);
@@ -94,19 +94,70 @@ export const PluginProvider: React.FC<PluginProviderProps> = ({
 
   const getConfigFields = useCallback((pluginId: string) => {
     const plugin = enabledPlugins.find(p => p.id === pluginId);
-    return plugin?.configFields || [];
+    if (!plugin) return [];
+
+    const registeredFields = pluginManager.getConfigFields(pluginId);
+    if (registeredFields.length > 0) {
+      return registeredFields.map(field => ({
+        ...field,
+        value: plugin.config?.[field.key] ?? field.value
+      }));
+    }
+
+    return plugin.configFields?.map(field => ({
+      ...field,
+      value: plugin.config?.[field.key] ?? field.value
+    })) || [];
   }, [enabledPlugins]);
 
-  const updateConfigField = useCallback((pluginId: string, key: string, value: any) => {
-    const plugin = enabledPlugins.find(p => p.id === pluginId);
-    if (plugin && plugin.config) {
-      plugin.config[key] = value;
-      setEnabledPlugins([...enabledPlugins]);
-      api.updatePluginConfig(sellerId, pluginId, { [key]: value });
-    }
-  }, [enabledPlugins, sellerId]);
+  const updateConfigField = useCallback(async (pluginId: string, key: string, value: any) => {
+    try {
+      const plugin = enabledPlugins.find(p => p.id === pluginId);
+      if (!plugin || !plugin.config) return;
 
-  const dispatchEvent = useCallback((event: any) => {
+      // Update local state immediately for responsive UI
+      const updatedPlugins = enabledPlugins.map(p => {
+        if (p.id === pluginId && p.config) {
+          return {
+            ...p,
+            config: {
+              ...p.config,
+              [key]: value
+            }
+          };
+        }
+        return p;
+      });
+      setEnabledPlugins(updatedPlugins);
+
+      // Update server state
+      await api.updatePluginConfig(sellerId, pluginId, { [key]: value });
+
+      // Update plugin manager's shared data if needed
+      const configField = getConfigFields(pluginId).find(f => f.key === key);
+      if (configField?.affectsSharedData) {
+        pluginManager.setSharedData(`${pluginId}.${key}`, value);
+      }
+
+      // Dispatch configuration change event
+      pluginManager.dispatchEvent({
+        type: 'configurationChanged',
+        pluginId,
+        key,
+        value,
+        timestamp: Date.now()
+      });
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Failed to update plugin configuration');
+      setError(error);
+      console.error('Error updating plugin configuration:', error);
+      
+      // Revert local state on error
+      await refreshPlugins(sellerId);
+    }
+  }, [enabledPlugins, sellerId, refreshPlugins, getConfigFields]);
+
+  const dispatchEvent = useCallback((event: PluginEvent) => {
     pluginManager.dispatchEvent(event);
   }, []);
 

@@ -1,61 +1,62 @@
-import React from 'react';
-
 export type PluginComponent = React.ComponentType<any>;
-export type PluginService = Record<string, Function>;
+export type PluginService = (...args: any[]) => any;
 
-export interface SharedData {
-  user?: {
-    id: string;
-    name: string;
-    email: string;
-    role: 'buyer' | 'seller';
-  };
-  cart?: {
-    items: Array<{
-      id: string;
-      name: string;
-      price: number;
-      quantity: number;
-    }>;
-    total: number;
-  };
-  [key: string]: any; // Allow for additional data types
+export interface PluginConfigFieldValidation {
+  required?: boolean;
+  min?: number;
+  max?: number;
+  pattern?: string;
 }
 
-export interface PluginEvent {
-  type: string;
-  payload?: any;
+export interface PluginConfigFieldOption {
+  label: string;
+  value: string;
 }
-
-export type PluginEventHandler = (event: PluginEvent) => void;
 
 export interface PluginConfigField {
   type: 'text' | 'number' | 'boolean' | 'color' | 'select';
   label: string;
   key: string;
   value: any;
-  options?: Array<{ label: string; value: any }>;
-  validation?: {
-    required?: boolean;
-    min?: number;
-    max?: number;
-    pattern?: string;
-  };
+  validation?: PluginConfigFieldValidation;
+  options?: PluginConfigFieldOption[];
+  affectsSharedData?: boolean;
+  description?: string;
 }
+
+export interface PluginEvent {
+  type: string;
+  pluginId?: string;
+  key?: string;
+  value?: any;
+  timestamp?: number;
+  [key: string]: any;
+}
+
+export interface SharedData {
+  [key: string]: any;
+}
+
+export interface PluginEventData {
+  type: string;
+  data?: any;
+}
+
+type EventListener = (event: PluginEvent) => void;
 
 class PluginManager {
   private static instance: PluginManager;
   private components: Map<string, PluginComponent>;
   private services: Map<string, PluginService>;
-  private sharedData: SharedData;
-  private eventHandlers: Map<string, Set<PluginEventHandler>>;
+  private sharedData: Map<string, any>;
+  private eventListeners: Map<string, Set<EventListener>>;
   private configFields: Map<string, PluginConfigField[]>;
 
   private constructor() {
     this.components = new Map();
     this.services = new Map();
-    this.sharedData = {};
-    this.eventHandlers = new Map();
+    this.sharedData = new Map();
+    this.eventListeners = new Map();
     this.configFields = new Map();
   }
 
@@ -67,64 +68,15 @@ class PluginManager {
   }
 
   public registerComponent(name: string, component: PluginComponent): void {
-    if (this.components.has(name)) {
-      console.warn(`Component ${name} is already registered. It will be overwritten.`);
-    }
     this.components.set(name, component);
   }
 
   public registerService(name: string, service: PluginService): void {
-    if (this.services.has(name)) {
-      console.warn(`Service ${name} is already registered. It will be overwritten.`);
-    }
     this.services.set(name, service);
   }
 
   public registerConfigFields(pluginId: string, fields: PluginConfigField[]): void {
     this.configFields.set(pluginId, fields);
-  }
-
-  public getConfigFields(pluginId: string): PluginConfigField[] {
-    return this.configFields.get(pluginId) || [];
-  }
-
-  public updateConfigField(pluginId: string, key: string, value: any): void {
-    const fields = this.configFields.get(pluginId);
-    if (fields) {
-      const field = fields.find(f => f.key === key);
-      if (field) {
-        field.value = value;
-      }
-    }
-  }
-
-  public addEventListener(type: string, handler: PluginEventHandler): void {
-    if (!this.eventHandlers.has(type)) {
-      this.eventHandlers.set(type, new Set());
-    }
-    this.eventHandlers.get(type)?.add(handler);
-  }
-
-  public removeEventListener(type: string, handler: PluginEventHandler): void {
-    this.eventHandlers.get(type)?.delete(handler);
-  }
-
-  public dispatchEvent(event: PluginEvent): void {
-    this.eventHandlers.get(event.type)?.forEach(handler => {
-      try {
-        handler(event);
-      } catch (error) {
-        console.error(`Error in plugin event handler for ${event.type}:`, error);
-      }
-    });
-  }
-
-  public setSharedData(key: string, value: any): void {
-    this.sharedData[key] = value;
-  }
-
-  public getSharedData<T>(key: string): T | undefined {
-    return this.sharedData[key] as T;
   }
 
   public getComponent(name: string): PluginComponent | undefined {
@@ -135,6 +87,10 @@ class PluginManager {
     return this.services.get(name);
   }
 
+  public getConfigFields(pluginId: string): PluginConfigField[] {
+    return this.configFields.get(pluginId) || [];
+  }
+
   public getAllComponents(): Map<string, PluginComponent> {
     return new Map(this.components);
   }
@@ -143,11 +99,49 @@ class PluginManager {
     return new Map(this.services);
   }
 
-  public clearRegistry(): void {
+  public setSharedData(key: string, value: any): void {
+    this.sharedData.set(key, value);
+    this.dispatchEvent({
+      type: 'sharedDataChanged',
+      key,
+      value,
+      timestamp: Date.now()
+    });
+  }
+
+  public getSharedData(key: string): any {
+    return this.sharedData.get(key);
+  }
+
+  public addEventListener(type: string, listener: EventListener): void {
+    if (!this.eventListeners.has(type)) {
+      this.eventListeners.set(type, new Set());
+    }
+    this.eventListeners.get(type)?.add(listener);
+  }
+
+  public removeEventListener(type: string, listener: EventListener): void {
+    this.eventListeners.get(type)?.delete(listener);
+  }
+
+  public dispatchEvent(event: PluginEvent): void {
+    const listeners = this.eventListeners.get(event.type);
+    if (listeners) {
+      listeners.forEach(listener => {
+        try {
+          listener(event);
+        } catch (error) {
+          console.error(`Error in plugin event listener:`, error);
+        }
+      });
+    }
+  }
+
+  public reset(): void {
     this.components.clear();
     this.services.clear();
-    this.sharedData = {};
-    this.eventHandlers.clear();
+    this.sharedData.clear();
+    this.eventListeners.clear();
     this.configFields.clear();
   }
 }
