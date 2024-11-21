@@ -1,3 +1,5 @@
+import { PluginConfigField } from '../core/PluginManager';
+
 // Plugin location types
 export type PluginLocation = 
   | 'header'
@@ -23,118 +25,128 @@ export interface Plugin {
   entryPoint: string;
   locations: PluginLocation[];
   config?: Record<string, any>;
+  configFields?: PluginConfigField[];
 }
 
-// Initial plugin data
-const initialPlugins: Plugin[] = [
-  {
-    id: 'test-plugin',
-    name: 'Test Plugin',
-    description: 'A simple test plugin to verify the plugin system',
-    type: 'ui',
-    enabled: true,
-    entryPoint: 'TestPlugin',
-    locations: ['header', 'footer', 'home-banner'],
-    config: {
-      message: 'Plugin system is working! 🎉',
-      backgroundColor: '#e3f2fd'
-    }
-  },
-  {
-    id: 'discount-banner',
-    name: 'Discount Banner',
-    description: 'Displays promotional discounts to buyers',
-    type: 'ui',
-    enabled: true,
-    entryPoint: 'DiscountBanner',
-    locations: ['home-banner', 'product-list'],
-    config: {
-      message: 'Special Offer!',
-      discount: 20
-    }
-  },
-  {
-    id: 'recommendation-engine',
-    name: 'Recommendation Engine',
-    description: 'Provides product recommendations',
-    type: 'integration',
-    enabled: true,
-    entryPoint: 'RecommendationsComponent',
-    locations: ['product-detail', 'cart-summary'],
-    config: {
-      maxItems: 3
-    }
-  },
-  {
-    id: 'seasonal-theme',
-    name: 'Seasonal Theme',
-    description: 'Applies seasonal styling to the store',
-    type: 'ui',
-    enabled: false,
-    entryPoint: 'SeasonalTheme',
-    locations: ['header', 'footer'],
-    config: {
-      theme: 'winter',
-      colors: {
-        primary: '#2c3e50',
-        secondary: '#3498db'
-      }
-    }
-  },
-  {
-    id: 'product-gallery',
-    name: 'Enhanced Product Gallery',
-    description: 'Advanced product image gallery with zoom and 360 view',
-    type: 'ui',
-    enabled: true,
-    entryPoint: 'ProductGallery',
-    locations: ['product-gallery'],
-    config: {
-      enableZoom: true,
-      enable360View: true
-    }
-  },
-  {
-    id: 'product-badges',
-    name: 'Product Badges',
-    description: 'Display special badges like "New", "Sale", "Best Seller"',
-    type: 'ui',
-    enabled: true,
-    entryPoint: 'ProductBadges',
-    locations: ['product-badges', 'product-list'],
-    config: {
-      badges: ['new', 'sale', 'best-seller']
-    }
-  },
-  {
-    id: 'product-customizer',
-    name: 'Product Customizer',
-    description: 'Allow customers to customize products',
-    type: 'ui',
-    enabled: true,
-    entryPoint: 'ProductCustomizer',
-    locations: ['product-customization'],
-    config: {
-      options: ['color', 'size', 'text']
-    }
-  }
-];
-
-// Local Storage Key
-const PLUGINS_STORAGE_KEY = 'store_plugins';
-
-// Helper functions for localStorage
+// Get stored plugins or initialize with defaults
 const getStoredPlugins = (): Plugin[] => {
-  const stored = localStorage.getItem(PLUGINS_STORAGE_KEY);
-  if (!stored) {
-    localStorage.setItem(PLUGINS_STORAGE_KEY, JSON.stringify(initialPlugins));
-    return initialPlugins;
+  const stored = localStorage.getItem('store_plugins');
+  if (stored) {
+    return JSON.parse(stored);
   }
-  return JSON.parse(stored);
-};
 
-const updateStoredPlugins = (plugins: Plugin[]) => {
-  localStorage.setItem(PLUGINS_STORAGE_KEY, JSON.stringify(plugins));
+  // Initial plugins configuration
+  const initialPlugins: Plugin[] = [
+    {
+      id: 'cart-summary-plugin',
+      name: 'Cart Summary Plugin',
+      description: 'Shows cart summary with configurable display options',
+      type: 'ui',
+      enabled: true,
+      entryPoint: 'CartSummaryPlugin',
+      locations: ['cart-summary'],
+      config: {
+        showTax: true,
+        showShipping: true,
+        theme: 'light',
+        accentColor: '#3498db',
+        itemLimit: 5
+      },
+      configFields: [
+        {
+          type: 'boolean',
+          label: 'Show Tax',
+          key: 'showTax',
+          value: true
+        },
+        {
+          type: 'boolean',
+          label: 'Show Shipping',
+          key: 'showShipping',
+          value: true
+        },
+        {
+          type: 'select',
+          label: 'Theme',
+          key: 'theme',
+          value: 'light',
+          options: [
+            { label: 'Light', value: 'light' },
+            { label: 'Dark', value: 'dark' },
+            { label: 'Colorful', value: 'colorful' }
+          ]
+        },
+        {
+          type: 'color',
+          label: 'Accent Color',
+          key: 'accentColor',
+          value: '#3498db'
+        },
+        {
+          type: 'number',
+          label: 'Item Display Limit',
+          key: 'itemLimit',
+          value: 5,
+          validation: {
+            required: true,
+            min: 1,
+            max: 10
+          }
+        }
+      ]
+    },
+    {
+      id: 'user-greeting',
+      name: 'User Greeting',
+      description: 'Displays personalized greeting using shared user data',
+      type: 'ui',
+      enabled: true,
+      entryPoint: 'UserGreeting',
+      locations: ['header'],
+      config: {
+        showName: true,
+        greeting: 'Welcome back',
+        fontSize: 16,
+        textColor: '#2c3e50'
+      },
+      configFields: [
+        {
+          type: 'boolean',
+          label: 'Show User Name',
+          key: 'showName',
+          value: true
+        },
+        {
+          type: 'text',
+          label: 'Greeting Text',
+          key: 'greeting',
+          value: 'Welcome back',
+          validation: {
+            required: true
+          }
+        },
+        {
+          type: 'number',
+          label: 'Font Size (px)',
+          key: 'fontSize',
+          value: 16,
+          validation: {
+            min: 12,
+            max: 24
+          }
+        },
+        {
+          type: 'color',
+          label: 'Text Color',
+          key: 'textColor',
+          value: '#2c3e50'
+        }
+      ]
+    }
+  ];
+
+  localStorage.setItem('store_plugins', JSON.stringify(initialPlugins));
+  return initialPlugins;
 };
 
 // Mock API endpoints
@@ -171,7 +183,25 @@ export const api = {
         
         if (plugin) {
           plugin.enabled = !plugin.enabled;
-          updateStoredPlugins(plugins);
+          localStorage.setItem('store_plugins', JSON.stringify(plugins));
+          resolve({ ...plugin });
+        } else {
+          reject(new Error('Plugin not found'));
+        }
+      }, 500);
+    });
+  },
+
+  // Update plugin configuration
+  updatePluginConfig: async (sellerId: string, pluginId: string, config: Record<string, any>): Promise<Plugin> => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        const plugins = getStoredPlugins();
+        const plugin = plugins.find(p => p.id === pluginId);
+        
+        if (plugin) {
+          plugin.config = { ...plugin.config, ...config };
+          localStorage.setItem('store_plugins', JSON.stringify(plugins));
           resolve({ ...plugin });
         } else {
           reject(new Error('Plugin not found'));

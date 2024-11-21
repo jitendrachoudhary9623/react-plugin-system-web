@@ -1,11 +1,92 @@
 import React, { useState } from 'react';
 import { usePlugins } from '../../core/PluginContext';
 import { Plugin, PluginLocation } from '../../mocks/api';
+import { PluginConfigField } from '../../core/PluginManager';
 import './styles.css';
 
 interface SellerDashboardProps {
   sellerId: string;
 }
+
+interface ConfigEditorProps {
+  pluginId: string;
+  fields: PluginConfigField[];
+  onUpdate: (key: string, value: any) => void;
+}
+
+const ConfigEditor: React.FC<ConfigEditorProps> = ({ pluginId, fields, onUpdate }) => {
+  const handleChange = (field: PluginConfigField, value: any) => {
+    onUpdate(field.key, value);
+  };
+
+  const renderField = (field: PluginConfigField) => {
+    switch (field.type) {
+      case 'text':
+        return (
+          <input
+            type="text"
+            value={field.value}
+            onChange={(e) => handleChange(field, e.target.value)}
+          />
+        );
+      case 'number':
+        return (
+          <input
+            type="number"
+            value={field.value}
+            min={field.validation?.min}
+            max={field.validation?.max}
+            onChange={(e) => handleChange(field, Number(e.target.value))}
+          />
+        );
+      case 'boolean':
+        return (
+          <input
+            type="checkbox"
+            checked={field.value}
+            onChange={(e) => handleChange(field, e.target.checked)}
+          />
+        );
+      case 'color':
+        return (
+          <input
+            type="color"
+            value={field.value}
+            onChange={(e) => handleChange(field, e.target.value)}
+          />
+        );
+      case 'select':
+        return (
+          <select
+            value={field.value}
+            onChange={(e) => handleChange(field, e.target.value)}
+          >
+            {field.options?.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="config-editor">
+      {fields.map((field) => (
+        <div key={field.key} className="config-field">
+          <label>
+            {field.label}
+            {field.validation?.required && <span className="required">*</span>}
+          </label>
+          {renderField(field)}
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const ConfirmationDialog: React.FC<{
   onConfirm: () => void;
@@ -31,9 +112,19 @@ const ConfirmationDialog: React.FC<{
 );
 
 const SellerDashboard: React.FC<SellerDashboardProps> = ({ sellerId }) => {
-  const { enabledPlugins, loading, error, togglePlugin, refreshPlugins } = usePlugins();
+  const { 
+    enabledPlugins, 
+    loading, 
+    error, 
+    togglePlugin, 
+    refreshPlugins,
+    getConfigFields,
+    updateConfigField
+  } = usePlugins();
+  
   const [isResetting, setIsResetting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [expandedPlugin, setExpandedPlugin] = useState<string | null>(null);
 
   const handleTogglePlugin = async (pluginId: string) => {
     try {
@@ -53,6 +144,10 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ sellerId }) => {
 
   const handleResetCancel = () => {
     setShowConfirmation(false);
+  };
+
+  const handleConfigUpdate = (pluginId: string, key: string, value: any) => {
+    updateConfigField(pluginId, key, value);
   };
 
   if (loading || isResetting) {
@@ -102,10 +197,24 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ sellerId }) => {
           {plugin.enabled ? 'Enabled' : 'Disabled'}
         </span>
       </div>
-      {plugin.config && (
+
+      <div className="plugin-actions">
+        <button
+          className="config-button"
+          onClick={() => setExpandedPlugin(expandedPlugin === plugin.id ? null : plugin.id)}
+        >
+          {expandedPlugin === plugin.id ? 'Hide Configuration' : 'Show Configuration'}
+        </button>
+      </div>
+
+      {expandedPlugin === plugin.id && (
         <div className="plugin-config">
           <h4>Configuration</h4>
-          <pre>{JSON.stringify(plugin.config, null, 2)}</pre>
+          <ConfigEditor
+            pluginId={plugin.id}
+            fields={getConfigFields(plugin.id)}
+            onUpdate={(key, value) => handleConfigUpdate(plugin.id, key, value)}
+          />
         </div>
       )}
     </div>

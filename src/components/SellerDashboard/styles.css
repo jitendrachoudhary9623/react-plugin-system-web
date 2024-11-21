@@ -5,6 +5,7 @@
   position: relative;
 }
 
+/* Header Styles */
 .dashboard-header {
   margin-bottom: 3rem;
   text-align: center;
@@ -23,6 +24,120 @@
   margin-bottom: 1.5rem;
 }
 
+/* Plugin Card Styles */
+.plugins-section {
+  margin-bottom: 3rem;
+}
+
+.plugins-section h2 {
+  font-size: 1.8rem;
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.plugins-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.plugin-card {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.plugin-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Plugin Configuration Editor */
+.config-editor {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+.config-field {
+  margin-bottom: 1rem;
+}
+
+.config-field:last-child {
+  margin-bottom: 0;
+}
+
+.config-field label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+.config-field .required {
+  color: #e74c3c;
+  margin-left: 0.25rem;
+}
+
+.config-field input[type="text"],
+.config-field input[type="number"],
+.config-field select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.config-field input[type="text"]:focus,
+.config-field input[type="number"]:focus,
+.config-field select:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.config-field input[type="checkbox"] {
+  margin-right: 0.5rem;
+}
+
+.config-field input[type="color"] {
+  width: 50px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Plugin Actions */
+.plugin-actions {
+  margin-top: 1rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.config-button {
+  padding: 0.5rem 1rem;
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  color: #2c3e50;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.config-button:hover {
+  background: #e9ecef;
+  border-color: #ced4da;
+}
+
+/* Reset Button */
 .reset-button {
   padding: 0.75rem 1.5rem;
   background: #e74c3c;
@@ -40,8 +155,29 @@
   transform: translateY(-1px);
 }
 
-.reset-button:active {
-  transform: translateY(0);
+/* Loading and Error States */
+.seller-dashboard.loading,
+.seller-dashboard.error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 1rem;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Confirmation Dialog */
@@ -103,7 +239,6 @@
 
 .confirm-button:hover {
   background: #c0392b;
-  transform: translateY(-1px);
 }
 
 .cancel-button {
@@ -113,257 +248,23 @@
 
 .cancel-button:hover {
   background: #e9ecef;
-  transform: translateY(-1px);
 }
 
-/* Plugins Section */
-.plugins-section {
-  margin-bottom: 3rem;
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.plugins-section h2 {
-  font-size: 1.8rem;
-  color: #2c3e50;
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid #e9ecef;
-}
-
-.plugins-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 1.5rem;
-}
-
-.plugin-card {
-  background: white;
-  border-radius: 8px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.plugin-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.plugin-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.plugin-header h3 {
-  font-size: 1.3rem;
-  color: #2c3e50;
-  margin: 0;
-}
-
-.plugin-description {
-  color: #34495e;
-  margin-bottom: 1.5rem;
-  line-height: 1.5;
-}
-
-.plugin-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.plugin-locations {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.location-tag {
-  background: #f8f9fa;
-  color: #2c3e50;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.85rem;
-}
-
-.plugin-status {
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.plugin-status.enabled {
-  background: #e1f7e1;
-  color: #27ae60;
-}
-
-.plugin-status.disabled {
-  background: #fde8e8;
-  color: #e74c3c;
-}
-
-/* Toggle Switch */
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 50px;
-  height: 24px;
-}
-
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  transition: .4s;
-  border-radius: 24px;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 16px;
-  width: 16px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  transition: .4s;
-  border-radius: 50%;
-}
-
-input:checked + .slider {
-  background-color: #2ecc71;
-}
-
-input:focus + .slider {
-  box-shadow: 0 0 1px #2ecc71;
-}
-
-input:checked + .slider:before {
-  transform: translateX(26px);
-}
-
-/* Plugin Configuration */
-.plugin-config {
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #e9ecef;
-}
-
-.plugin-config h4 {
-  color: #2c3e50;
-  margin-bottom: 1rem;
-  font-size: 1rem;
-}
-
-.plugin-config pre {
-  background: #f8f9fa;
-  padding: 1rem;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  overflow-x: auto;
-  color: #34495e;
-}
-
-/* Loading State */
-.seller-dashboard.loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  gap: 1rem;
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #3498db;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Error State */
-.seller-dashboard.error {
-  text-align: center;
-  padding: 3rem;
-  color: #e74c3c;
-}
-
-/* Confirmation Dialog */
-.confirmation-dialog {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  max-width: 400px;
-  width: 90%;
-}
-
-.confirmation-dialog h3 {
-  margin-bottom: 1rem;
-  color: #2c3e50;
-}
-
-.confirmation-dialog p {
-  margin-bottom: 1.5rem;
-  color: #34495e;
-}
-
-.confirmation-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-}
-
-.confirmation-actions button {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background 0.2s ease;
-}
-
-.confirm-button {
-  background: #e74c3c;
-  color: white;
-}
-
-.confirm-button:hover {
-  background: #c0392b;
-}
-
-.cancel-button {
-  background: #f8f9fa;
-  color: #2c3e50;
-}
-
-.cancel-button:hover {
-  background: #e9ecef;
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Responsive Design */
@@ -378,6 +279,14 @@ input:checked + .slider:before {
 
   .plugins-grid {
     grid-template-columns: 1fr;
+  }
+
+  .plugin-actions {
+    flex-direction: column;
+  }
+
+  .config-button {
+    width: 100%;
   }
 
   .confirmation-dialog {
