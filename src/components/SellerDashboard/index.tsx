@@ -121,11 +121,8 @@ const PluginCard: React.FC<{
   onToggle: () => void;
   onConfigUpdate: (key: string, value: any) => void;
 }> = ({ plugin, onToggle, onConfigUpdate }) => {
-  const [showConfig, setShowConfig] = useState(false);
   const { getConfigFields, components } = usePlugins();
   const configFields = getConfigFields(plugin.id);
-
-  // Get the plugin component
   const PluginComponent = components.get(plugin.entryPoint);
 
   return (
@@ -154,33 +151,8 @@ const PluginCard: React.FC<{
         </div>
       </div>
 
-      {/* Plugin Preview */}
-      {PluginComponent && (
-        <div className="plugin-preview">
-          <h4>Preview:</h4>
-          <div className="preview-container">
-            <PluginComponent 
-              {...plugin.config} 
-              pluginId={plugin.id}
-              isSellerView={true}
-            />
-          </div>
-        </div>
-      )}
-
-      {configFields.length > 0 && (
-        <div className="plugin-actions">
-          <button
-            className="config-button"
-            onClick={() => setShowConfig(!showConfig)}
-          >
-            {showConfig ? 'Hide Configuration' : 'Show Configuration'}
-          </button>
-        </div>
-      )}
-
-      {showConfig && configFields.length > 0 && (
-        <div className="plugin-config">
+      <div className="plugin-content">
+        <div className="plugin-config-section">
           <h4>Configuration</h4>
           <ConfigEditor
             pluginId={plugin.id}
@@ -188,7 +160,20 @@ const PluginCard: React.FC<{
             onUpdate={onConfigUpdate}
           />
         </div>
-      )}
+
+        {PluginComponent && (
+          <div className="plugin-preview-section">
+            <h4>Preview</h4>
+            <div className="preview-container">
+              <PluginComponent 
+                {...plugin.config} 
+                pluginId={plugin.id}
+                isSellerView={true}
+              />
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

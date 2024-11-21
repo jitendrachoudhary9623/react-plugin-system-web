@@ -76,7 +76,7 @@
 /* Plugin Cards */
 .plugins-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(600px, 1fr));
   gap: 1.5rem;
 }
 
@@ -113,25 +113,35 @@
   line-height: 1.5;
 }
 
-/* Plugin Preview */
-.plugin-preview {
-  margin: 1.5rem 0;
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
-  overflow: hidden;
+/* Plugin Content Layout */
+.plugin-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e9ecef;
 }
 
-.plugin-preview h4 {
-  margin: 0;
-  padding: 1rem;
+.plugin-config-section,
+.plugin-preview-section {
   background: #f8f9fa;
-  border-bottom: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.plugin-config-section h4,
+.plugin-preview-section h4 {
+  margin: 0 0 1rem 0;
   color: #2c3e50;
+  font-size: 1.1rem;
 }
 
 .preview-container {
-  padding: 1rem;
   background: white;
+  border-radius: 6px;
+  padding: 1rem;
+  min-height: 100px;
 }
 
 /* Plugin Locations */
@@ -158,38 +168,6 @@
   border-radius: 12px;
   font-size: 0.85rem;
   border: 1px solid #e9ecef;
-}
-
-/* Plugin Configuration */
-.plugin-actions {
-  margin-bottom: 1rem;
-}
-
-.config-button {
-  padding: 0.5rem 1rem;
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 4px;
-  color: #2c3e50;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  width: 100%;
-}
-
-.config-button:hover {
-  background: #e9ecef;
-}
-
-.plugin-config {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e9ecef;
-}
-
-.plugin-config h4 {
-  color: #2c3e50;
-  margin-bottom: 1rem;
-  font-size: 1rem;
 }
 
 /* Configuration Editor */
@@ -220,17 +198,19 @@
 .config-field input[type="text"],
 .config-field input[type="number"],
 .config-field select {
-  padding: 0.5rem;
+  padding: 0.75rem;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 1rem;
+  background: white;
 }
 
 .config-field input[type="color"] {
   width: 50px;
-  height: 30px;
+  height: 40px;
   padding: 0;
   border: none;
+  border-radius: 4px;
 }
 
 .field-description {
@@ -316,19 +296,21 @@ input:checked + .slider:before {
     color: #bdc3c7;
   }
 
-  .location-tag {
-    background: #34495e;
-    color: #ecf0f1;
-    border-color: #2c3e50;
+  .plugin-content {
+    border-color: #34495e;
   }
 
-  .config-button {
+  .plugin-config-section,
+  .plugin-preview-section {
     background: #34495e;
-    color: #ecf0f1;
-    border-color: #2c3e50;
   }
 
-  .config-button:hover {
+  .plugin-config-section h4,
+  .plugin-preview-section h4 {
+    color: #ecf0f1;
+  }
+
+  .preview-container {
     background: #2c3e50;
   }
 
@@ -336,33 +318,39 @@ input:checked + .slider:before {
     color: #ecf0f1;
   }
 
+  .config-field input[type="text"],
+  .config-field input[type="number"],
+  .config-field select {
+    background: #2c3e50;
+    border-color: #34495e;
+    color: #ecf0f1;
+  }
+
   .field-description {
     color: #bdc3c7;
   }
 
-  .plugin-preview {
-    border-color: #34495e;
-  }
-
-  .plugin-preview h4 {
-    background: #2c3e50;
-    color: #ecf0f1;
-    border-color: #34495e;
-  }
-
-  .preview-container {
+  .location-tag {
     background: #34495e;
+    color: #ecf0f1;
+    border-color: #2c3e50;
   }
 }
 
 /* Responsive Design */
+@media (max-width: 1024px) {
+  .plugins-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .plugin-content {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 768px) {
   .seller-dashboard {
     padding: 1rem;
-  }
-
-  .plugins-grid {
-    grid-template-columns: 1fr;
   }
 
   .plugin-card {
@@ -376,5 +364,18 @@ input:checked + .slider:before {
   .group-tab {
     width: calc(50% - 0.5rem);
     text-align: center;
+  }
+
+  .plugin-locations {
+    margin-bottom: 1rem;
+  }
+
+  .plugin-content {
+    gap: 1rem;
+  }
+
+  .plugin-config-section,
+  .plugin-preview-section {
+    padding: 1rem;
   }
 }
