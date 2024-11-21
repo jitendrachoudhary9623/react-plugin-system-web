@@ -7,9 +7,33 @@ interface SellerDashboardProps {
   sellerId: string;
 }
 
+const ConfirmationDialog: React.FC<{
+  onConfirm: () => void;
+  onCancel: () => void;
+}> = ({ onConfirm, onCancel }) => (
+  <div className="confirmation-overlay">
+    <div className="confirmation-dialog">
+      <h3>Reset Plugin Settings</h3>
+      <p>
+        Are you sure you want to reset all plugin settings to their default state? 
+        This action cannot be undone.
+      </p>
+      <div className="confirmation-actions">
+        <button className="cancel-button" onClick={onCancel}>
+          Cancel
+        </button>
+        <button className="confirm-button" onClick={onConfirm}>
+          Reset
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
 const SellerDashboard: React.FC<SellerDashboardProps> = ({ sellerId }) => {
   const { enabledPlugins, loading, error, togglePlugin, refreshPlugins } = usePlugins();
   const [isResetting, setIsResetting] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   const handleTogglePlugin = async (pluginId: string) => {
     try {
@@ -19,13 +43,16 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ sellerId }) => {
     }
   };
 
-  const handleReset = () => {
+  const handleResetConfirm = async () => {
+    setShowConfirmation(false);
     setIsResetting(true);
-    // Clear localStorage and refresh plugins
     localStorage.removeItem('store_plugins');
-    refreshPlugins(sellerId).finally(() => {
-      setIsResetting(false);
-    });
+    await refreshPlugins(sellerId);
+    setIsResetting(false);
+  };
+
+  const handleResetCancel = () => {
+    setShowConfirmation(false);
   };
 
   if (loading || isResetting) {
@@ -86,12 +113,19 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ sellerId }) => {
 
   return (
     <div className="seller-dashboard">
+      {showConfirmation && (
+        <ConfirmationDialog
+          onConfirm={handleResetConfirm}
+          onCancel={handleResetCancel}
+        />
+      )}
+
       <div className="dashboard-header">
         <h1>Plugin Management</h1>
         <p>Enable or disable plugins to customize your store</p>
         <button 
           className="reset-button"
-          onClick={handleReset}
+          onClick={() => setShowConfirmation(true)}
           title="Reset all plugin settings to their default state"
         >
           Reset to Defaults
