@@ -6,8 +6,6 @@ import './Header.css';
 const Header: React.FC = () => {
   return (
     <header className="store-header">
-      <PluginSlot location="header" />
-      
       <div className="header-content">
         <div className="header-brand">
           <Link to="/" className="brand-logo">
@@ -42,6 +40,10 @@ const Header: React.FC = () => {
             Seller Dashboard
           </NavLink>
         </nav>
+
+        <div className="header-user">
+          <PluginSlot location="header" />
+        </div>
       </div>
     </header>
   );

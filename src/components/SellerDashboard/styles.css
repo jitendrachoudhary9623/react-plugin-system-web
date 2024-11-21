@@ -2,14 +2,12 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
-  position: relative;
 }
 
-/* Header Styles */
+/* Header */
 .dashboard-header {
-  margin-bottom: 3rem;
   text-align: center;
-  position: relative;
+  margin-bottom: 3rem;
 }
 
 .dashboard-header h1 {
@@ -21,22 +19,60 @@
 .dashboard-header p {
   color: #7f8c8d;
   font-size: 1.1rem;
-  margin-bottom: 1.5rem;
 }
 
-/* Plugin Card Styles */
-.plugins-section {
-  margin-bottom: 3rem;
+/* Location Groups */
+.location-groups {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
-.plugins-section h2 {
-  font-size: 1.8rem;
+.group-tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.group-tab {
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: none;
+  border-radius: 6px;
   color: #2c3e50;
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid #e9ecef;
+  cursor: pointer;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: all 0.2s ease;
 }
 
+.group-tab:hover {
+  background: rgba(52, 152, 219, 0.1);
+  color: #3498db;
+}
+
+.group-tab.active {
+  background: #3498db;
+  color: white;
+}
+
+.group-content {
+  padding: 2rem;
+}
+
+.group-description {
+  color: #7f8c8d;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+/* Plugin Cards */
 .plugins-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -47,63 +83,125 @@
   background: white;
   border-radius: 8px;
   padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e9ecef;
   transition: all 0.2s ease;
 }
 
 .plugin-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Plugin Configuration Editor */
-.config-editor {
-  margin-top: 1rem;
-  padding: 1rem;
-  background: #f8f9fa;
-  border-radius: 4px;
-}
-
-.config-field {
+.plugin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 1rem;
 }
 
-.config-field:last-child {
-  margin-bottom: 0;
+.plugin-header h3 {
+  font-size: 1.3rem;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.plugin-description {
+  color: #34495e;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+/* Plugin Locations */
+.plugin-locations {
+  margin-bottom: 1.5rem;
+}
+
+.plugin-locations h4 {
+  color: #2c3e50;
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.location-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.location-tag {
+  background: #f8f9fa;
+  color: #2c3e50;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  border: 1px solid #e9ecef;
+}
+
+/* Plugin Configuration */
+.plugin-actions {
+  margin-bottom: 1rem;
+}
+
+.config-button {
+  padding: 0.5rem 1rem;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  color: #2c3e50;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.config-button:hover {
+  background: #e9ecef;
+}
+
+.plugin-config {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.plugin-config h4 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+/* Configuration Editor */
+.config-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.config-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .config-field label {
-  display: block;
-  margin-bottom: 0.5rem;
   color: #2c3e50;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .config-field .required {
   color: #e74c3c;
-  margin-left: 0.25rem;
 }
 
 .config-field input[type="text"],
 .config-field input[type="number"],
 .config-field select {
-  width: 100%;
   padding: 0.5rem;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 1rem;
-  transition: border-color 0.2s ease;
-}
-
-.config-field input[type="text"]:focus,
-.config-field input[type="number"]:focus,
-.config-field select:focus {
-  outline: none;
-  border-color: #3498db;
-}
-
-.config-field input[type="checkbox"] {
-  margin-right: 0.5rem;
 }
 
 .config-field input[type="color"] {
@@ -111,53 +209,60 @@
   height: 30px;
   padding: 0;
   border: none;
-  border-radius: 4px;
+}
+
+/* Toggle Switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
   cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 24px;
 }
 
-/* Plugin Actions */
-.plugin-actions {
-  margin-top: 1rem;
-  display: flex;
-  gap: 1rem;
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
 }
 
-.config-button {
-  padding: 0.5rem 1rem;
-  background: #f8f9fa;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  color: #2c3e50;
-  cursor: pointer;
-  transition: all 0.2s ease;
+input:checked + .slider {
+  background-color: #2ecc71;
 }
 
-.config-button:hover {
-  background: #e9ecef;
-  border-color: #ced4da;
+input:focus + .slider {
+  box-shadow: 0 0 1px #2ecc71;
 }
 
-/* Reset Button */
-.reset-button {
-  padding: 0.75rem 1.5rem;
-  background: #e74c3c;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
+input:checked + .slider:before {
+  transform: translateX(26px);
 }
 
-.reset-button:hover {
-  background: #c0392b;
-  transform: translateY(-1px);
-}
-
-/* Loading and Error States */
-.seller-dashboard.loading,
-.seller-dashboard.error {
+/* Loading State */
+.seller-dashboard.loading {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -180,91 +285,11 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Confirmation Dialog */
-.confirmation-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  animation: fadeIn 0.2s ease-out;
-}
-
-.confirmation-dialog {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  max-width: 400px;
-  width: 90%;
-  animation: slideIn 0.3s ease-out;
-}
-
-.confirmation-dialog h3 {
-  color: #2c3e50;
-  margin-bottom: 1rem;
-  font-size: 1.5rem;
-}
-
-.confirmation-dialog p {
-  color: #34495e;
-  margin-bottom: 1.5rem;
-  line-height: 1.5;
-}
-
-.confirmation-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-}
-
-.confirmation-actions button {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.confirm-button {
-  background: #e74c3c;
-  color: white;
-}
-
-.confirm-button:hover {
-  background: #c0392b;
-}
-
-.cancel-button {
-  background: #f8f9fa;
-  color: #2c3e50;
-}
-
-.cancel-button:hover {
-  background: #e9ecef;
-}
-
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Error State */
+.seller-dashboard.error {
+  text-align: center;
+  padding: 3rem;
+  color: #e74c3c;
 }
 
 /* Responsive Design */
@@ -281,29 +306,34 @@
     grid-template-columns: 1fr;
   }
 
-  .plugin-actions {
-    flex-direction: column;
+  .group-tabs {
+    padding: 0.5rem;
   }
 
-  .config-button {
-    width: 100%;
+  .group-tab {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
   }
 
-  .confirmation-dialog {
-    margin: 1rem;
-    padding: 1.5rem;
+  .group-content {
+    padding: 1rem;
   }
 
-  .confirmation-actions {
-    flex-direction: column;
+  .plugin-card {
+    padding: 1rem;
   }
+}
 
-  .confirmation-actions button {
-    width: 100%;
-  }
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 
-  .reset-button {
-    width: 100%;
-    margin-top: 1rem;
-  }
+.plugin-card {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.group-content {
+  animation: fadeIn 0.3s ease-out;
 }

@@ -69,22 +69,31 @@
   border-radius: 2px;
 }
 
-/* Cart Badge */
-.cart-link {
-  position: relative;
+/* Header User Section (Plugin Slot) */
+.header-user {
+  min-width: 200px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
-.cart-badge {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  background: #e74c3c;
-  color: white;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  min-width: 20px;
-  text-align: center;
+/* Plugin Slot Styles */
+.header-user .plugin-slot {
+  width: 100%;
+}
+
+/* Animation for active link underline */
+@keyframes underlineSlide {
+  from {
+    width: 0;
+  }
+  to {
+    width: 80%;
+  }
+}
+
+.header-nav a.active::after {
+  animation: underlineSlide 0.3s ease forwards;
 }
 
 /* Responsive Design */
@@ -110,25 +119,27 @@
   .brand-logo {
     font-size: 1.2rem;
   }
+
+  .header-user {
+    width: 100%;
+    min-width: unset;
+    justify-content: center;
+    margin-top: 0.5rem;
+  }
 }
 
-/* Plugin Slot Styles */
-.header-plugin-slot {
-  background: #f8f9fa;
-  padding: 0.5rem;
-  text-align: center;
-}
-
-/* Animation for active link underline */
-@keyframes underlineSlide {
+/* Plugin Slot Animations */
+@keyframes fadeSlideIn {
   from {
-    width: 0;
+    opacity: 0;
+    transform: translateY(-10px);
   }
   to {
-    width: 80%;
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-.header-nav a.active::after {
-  animation: underlineSlide 0.3s ease forwards;
+.header-user .plugin-slot > * {
+  animation: fadeSlideIn 0.3s ease-out;
 }

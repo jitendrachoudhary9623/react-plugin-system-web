@@ -4,9 +4,34 @@ import { Plugin, PluginLocation } from '../../mocks/api';
 import { PluginConfigField } from '../../core/PluginManager';
 import './styles.css';
 
-interface SellerDashboardProps {
-  sellerId: string;
+interface LocationGroup {
+  name: string;
+  locations: PluginLocation[];
+  description: string;
 }
+
+const locationGroups: LocationGroup[] = [
+  {
+    name: 'Layout',
+    locations: ['header', 'footer', 'sidebar'],
+    description: 'Plugins that appear in the main layout areas'
+  },
+  {
+    name: 'Home Page',
+    locations: ['home-banner', 'home-featured'],
+    description: 'Plugins for the home page sections'
+  },
+  {
+    name: 'Product Pages',
+    locations: ['product-list', 'product-detail', 'product-gallery', 'product-badges', 'product-customization'],
+    description: 'Plugins for product listing and detail pages'
+  },
+  {
+    name: 'Shopping',
+    locations: ['cart-summary', 'checkout'],
+    description: 'Plugins for cart and checkout process'
+  }
+];
 
 interface ConfigEditorProps {
   pluginId: string;
@@ -88,73 +113,75 @@ const ConfigEditor: React.FC<ConfigEditorProps> = ({ pluginId, fields, onUpdate 
   );
 };
 
-const ConfirmationDialog: React.FC<{
-  onConfirm: () => void;
-  onCancel: () => void;
-}> = ({ onConfirm, onCancel }) => (
-  <div className="confirmation-overlay">
-    <div className="confirmation-dialog">
-      <h3>Reset Plugin Settings</h3>
-      <p>
-        Are you sure you want to reset all plugin settings to their default state? 
-        This action cannot be undone.
-      </p>
-      <div className="confirmation-actions">
-        <button className="cancel-button" onClick={onCancel}>
-          Cancel
-        </button>
-        <button className="confirm-button" onClick={onConfirm}>
-          Reset
-        </button>
+const PluginCard: React.FC<{
+  plugin: Plugin;
+  onToggle: () => void;
+  onConfigUpdate: (key: string, value: any) => void;
+}> = ({ plugin, onToggle, onConfigUpdate }) => {
+  const [showConfig, setShowConfig] = useState(false);
+  const { getConfigFields } = usePlugins();
+  const configFields = getConfigFields(plugin.id);
+
+  return (
+    <div className="plugin-card">
+      <div className="plugin-header">
+        <h3>{plugin.name}</h3>
+        <label className="switch">
+          <input
+            type="checkbox"
+            checked={plugin.enabled}
+            onChange={onToggle}
+          />
+          <span className="slider"></span>
+        </label>
       </div>
+      <p className="plugin-description">{plugin.description}</p>
+      
+      <div className="plugin-locations">
+        <h4>Available Locations:</h4>
+        <div className="location-tags">
+          {plugin.locations.map((location) => (
+            <span key={location} className="location-tag">
+              {location}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {configFields.length > 0 && (
+        <div className="plugin-actions">
+          <button
+            className="config-button"
+            onClick={() => setShowConfig(!showConfig)}
+          >
+            {showConfig ? 'Hide Configuration' : 'Show Configuration'}
+          </button>
+        </div>
+      )}
+
+      {showConfig && configFields.length > 0 && (
+        <div className="plugin-config">
+          <h4>Configuration</h4>
+          <ConfigEditor
+            pluginId={plugin.id}
+            fields={configFields}
+            onUpdate={onConfigUpdate}
+          />
+        </div>
+      )}
     </div>
-  </div>
-);
+  );
+};
 
-const SellerDashboard: React.FC<SellerDashboardProps> = ({ sellerId }) => {
-  const { 
-    enabledPlugins, 
-    loading, 
-    error, 
-    togglePlugin, 
-    refreshPlugins,
-    getConfigFields,
-    updateConfigField
-  } = usePlugins();
-  
-  const [isResetting, setIsResetting] = useState(false);
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [expandedPlugin, setExpandedPlugin] = useState<string | null>(null);
+const SellerDashboard: React.FC<{ sellerId: string }> = ({ sellerId }) => {
+  const { enabledPlugins, loading, error, togglePlugin, updateConfigField } = usePlugins();
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
 
-  const handleTogglePlugin = async (pluginId: string) => {
-    try {
-      await togglePlugin(sellerId, pluginId);
-    } catch (err) {
-      console.error('Failed to toggle plugin:', err);
-    }
-  };
-
-  const handleResetConfirm = async () => {
-    setShowConfirmation(false);
-    setIsResetting(true);
-    localStorage.removeItem('store_plugins');
-    await refreshPlugins(sellerId);
-    setIsResetting(false);
-  };
-
-  const handleResetCancel = () => {
-    setShowConfirmation(false);
-  };
-
-  const handleConfigUpdate = (pluginId: string, key: string, value: any) => {
-    updateConfigField(pluginId, key, value);
-  };
-
-  if (loading || isResetting) {
+  if (loading) {
     return (
       <div className="seller-dashboard loading">
         <div className="loading-spinner"></div>
-        <p>{isResetting ? 'Resetting plugins...' : 'Loading plugins...'}</p>
+        <p>Loading plugins...</p>
       </div>
     );
   }
@@ -167,92 +194,83 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ sellerId }) => {
     );
   }
 
-  // Group plugins by type
-  const uiPlugins = enabledPlugins.filter(plugin => plugin.type === 'ui');
-  const integrationPlugins = enabledPlugins.filter(plugin => plugin.type === 'integration');
+  const handleTogglePlugin = async (pluginId: string) => {
+    try {
+      await togglePlugin(sellerId, pluginId);
+    } catch (err) {
+      console.error('Failed to toggle plugin:', err);
+    }
+  };
 
-  const renderPluginCard = (plugin: Plugin) => (
-    <div key={plugin.id} className="plugin-card">
-      <div className="plugin-header">
-        <h3>{plugin.name}</h3>
-        <label className="switch">
-          <input
-            type="checkbox"
-            checked={plugin.enabled}
-            onChange={() => handleTogglePlugin(plugin.id)}
-          />
-          <span className="slider"></span>
-        </label>
-      </div>
-      <p className="plugin-description">{plugin.description}</p>
-      <div className="plugin-meta">
-        <div className="plugin-locations">
-          {plugin.locations.map((location: PluginLocation) => (
-            <span key={location} className="location-tag">
-              {location}
-            </span>
-          ))}
-        </div>
-        <span className={`plugin-status ${plugin.enabled ? 'enabled' : 'disabled'}`}>
-          {plugin.enabled ? 'Enabled' : 'Disabled'}
-        </span>
-      </div>
-
-      <div className="plugin-actions">
-        <button
-          className="config-button"
-          onClick={() => setExpandedPlugin(expandedPlugin === plugin.id ? null : plugin.id)}
-        >
-          {expandedPlugin === plugin.id ? 'Hide Configuration' : 'Show Configuration'}
-        </button>
-      </div>
-
-      {expandedPlugin === plugin.id && (
-        <div className="plugin-config">
-          <h4>Configuration</h4>
-          <ConfigEditor
-            pluginId={plugin.id}
-            fields={getConfigFields(plugin.id)}
-            onUpdate={(key, value) => handleConfigUpdate(plugin.id, key, value)}
-          />
-        </div>
-      )}
-    </div>
-  );
+  const handleConfigUpdate = async (pluginId: string, key: string, value: any) => {
+    try {
+      await updateConfigField(pluginId, key, value);
+    } catch (err) {
+      console.error('Failed to update plugin config:', err);
+    }
+  };
 
   return (
     <div className="seller-dashboard">
-      {showConfirmation && (
-        <ConfirmationDialog
-          onConfirm={handleResetConfirm}
-          onCancel={handleResetCancel}
-        />
-      )}
-
       <div className="dashboard-header">
         <h1>Plugin Management</h1>
-        <p>Enable or disable plugins to customize your store</p>
-        <button 
-          className="reset-button"
-          onClick={() => setShowConfirmation(true)}
-          title="Reset all plugin settings to their default state"
-        >
-          Reset to Defaults
-        </button>
+        <p>Enable, disable, and configure plugins for your store</p>
       </div>
 
-      <div className="plugins-section">
-        <h2>UI Plugins</h2>
-        <div className="plugins-grid">
-          {uiPlugins.map(renderPluginCard)}
+      <div className="location-groups">
+        <div className="group-tabs">
+          {locationGroups.map(group => (
+            <button
+              key={group.name}
+              className={`group-tab ${selectedGroup === group.name ? 'active' : ''}`}
+              onClick={() => setSelectedGroup(group.name)}
+            >
+              {group.name}
+            </button>
+          ))}
         </div>
-      </div>
 
-      <div className="plugins-section">
-        <h2>Integration Plugins</h2>
-        <div className="plugins-grid">
-          {integrationPlugins.map(renderPluginCard)}
-        </div>
+        {selectedGroup && (
+          <div className="group-content">
+            <div className="group-description">
+              {locationGroups.find(g => g.name === selectedGroup)?.description}
+            </div>
+            <div className="plugins-grid">
+              {enabledPlugins
+                .filter(plugin => 
+                  plugin.locations.some(loc => 
+                    locationGroups
+                      .find(g => g.name === selectedGroup)
+                      ?.locations.includes(loc)
+                  )
+                )
+                .map(plugin => (
+                  <PluginCard
+                    key={plugin.id}
+                    plugin={plugin}
+                    onToggle={() => handleTogglePlugin(plugin.id)}
+                    onConfigUpdate={(key, value) => handleConfigUpdate(plugin.id, key, value)}
+                  />
+                ))}
+            </div>
+          </div>
+        )}
+
+        {!selectedGroup && (
+          <div className="all-plugins">
+            <h2>All Plugins</h2>
+            <div className="plugins-grid">
+              {enabledPlugins.map(plugin => (
+                <PluginCard
+                  key={plugin.id}
+                  plugin={plugin}
+                  onToggle={() => handleTogglePlugin(plugin.id)}
+                  onConfigUpdate={(key, value) => handleConfigUpdate(plugin.id, key, value)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
